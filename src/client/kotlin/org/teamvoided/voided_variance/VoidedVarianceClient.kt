@@ -1,10 +1,15 @@
 package org.teamvoided.voided_variance
 
-import org.teamvoided.voided_variance.VoidedVariance.log
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap
+import net.minecraft.block.Block
+import net.minecraft.client.render.RenderLayer
+
 
 @Suppress("unused")
-object VoidedVarianceClient{
+object VoidedVarianceClient {
+    private val CUTOUTS = listOf<Block>()
+
     fun init() {
-        log.info("Hello from Client")
+        CUTOUTS.forEach { BlockRenderLayerMap.INSTANCE.putBlock(it, RenderLayer.getCutout()) }
     }
 }

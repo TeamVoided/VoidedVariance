@@ -28,9 +28,9 @@ repositories {
 println("Task: " + gradle.startParameter.taskNames.joinToString(","))
 
 modSettings {
-    entrypoint("main", "org.teamvoided.voided_variance.Template::init")
-    entrypoint("client", "org.teamvoided.voided_variance.TemplateClient::init")
-    entrypoint("fabric-datagen", "org.teamvoided.voided_variance.data.gen.TemplateData")
+    entrypoint("main", "org.teamvoided.voided_variance.VoidedVariance::init")
+    entrypoint("client", "org.teamvoided.voided_variance.VoidedVarianceClient::init")
+    entrypoint("fabric-datagen", "org.teamvoided.voided_variance.data.gen.VoidedVarianceData")
 
 //    mixinFile("${modId()}.client.mixins.json")
 //    mixinFile("${modId()}.mixins.json")
