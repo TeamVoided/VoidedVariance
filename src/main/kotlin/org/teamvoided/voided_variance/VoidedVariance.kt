@@ -1,15 +1,15 @@
-package org.teamvoided.template
+package org.teamvoided.voided_variance
 
 import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Suppress("unused")
-object Template {
+object VoidedVariance {
     const val MODID = "voided_variance"
 
     @JvmField
-    val log: Logger = LoggerFactory.getLogger(Template::class.simpleName)
+    val log: Logger = LoggerFactory.getLogger(VoidedVariance::class.simpleName)
 
     fun init() {
         log.info("Hello from Common")
