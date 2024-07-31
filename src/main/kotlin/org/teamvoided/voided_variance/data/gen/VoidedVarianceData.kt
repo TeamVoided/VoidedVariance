@@ -6,6 +6,8 @@ import net.minecraft.registry.RegistrySetBuilder
 import org.teamvoided.voided_variance.VoidedVariance.log
 import org.teamvoided.voided_variance.data.gen.prov.EnLangProvider
 import org.teamvoided.voided_variance.data.gen.prov.ModelProvider
+import org.teamvoided.voided_variance.data.gen.tags.BlockTagProvider
+import org.teamvoided.voided_variance.data.gen.tags.ItemTagProvider
 
 @Suppress("unused")
 class VoidedVarianceData : DataGeneratorEntrypoint {
@@ -15,6 +17,9 @@ class VoidedVarianceData : DataGeneratorEntrypoint {
 
         pack.addProvider(::ModelProvider)
         pack.addProvider(::EnLangProvider)
+
+        val blockTags = pack.addProvider(::BlockTagProvider)
+        pack.addProvider { o, r -> ItemTagProvider(o, r, blockTags) }
     }
 
     override fun buildRegistry(gen: RegistrySetBuilder) {
