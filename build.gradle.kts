@@ -42,8 +42,8 @@ dependencies {
     modImplementation(libs.modmenu)
 
 
-//    modCompileOnly("${libs.emi.get()}:api")
-//    modLocalRuntime(libs.emi)
+    modCompileOnly("${libs.emi.get()}:api")
+    modLocalRuntime(libs.emi)
 }
 
 loom {
