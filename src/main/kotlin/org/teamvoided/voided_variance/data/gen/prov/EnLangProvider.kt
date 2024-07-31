@@ -16,7 +16,6 @@ class EnLangProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
         VVItems.ITEMS.forEach{ gen.add(it.translationKey, it.id.lang())}
     }
 
-
     private fun Identifier.lang(): String = this.path.titleCase()
 
     private fun String.titleCase(): String {

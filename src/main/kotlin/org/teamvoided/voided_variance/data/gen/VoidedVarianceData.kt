@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator
 import net.minecraft.registry.RegistrySetBuilder
 import org.teamvoided.voided_variance.VoidedVariance.log
+import org.teamvoided.voided_variance.data.gen.prov.BlockLootTableProvider
 import org.teamvoided.voided_variance.data.gen.prov.EnLangProvider
 import org.teamvoided.voided_variance.data.gen.prov.ModelProvider
 import org.teamvoided.voided_variance.data.gen.tags.BlockTagProvider
@@ -17,6 +18,7 @@ class VoidedVarianceData : DataGeneratorEntrypoint {
 
         pack.addProvider(::ModelProvider)
         pack.addProvider(::EnLangProvider)
+        pack.addProvider(::BlockLootTableProvider)
 
         val blockTags = pack.addProvider(::BlockTagProvider)
         pack.addProvider { o, r -> ItemTagProvider(o, r, blockTags) }
