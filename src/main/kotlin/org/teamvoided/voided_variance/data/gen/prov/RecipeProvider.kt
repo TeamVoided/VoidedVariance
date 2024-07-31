@@ -12,6 +12,6 @@ import java.util.concurrent.CompletableFuture
 
 class RecipeProvider (o: FabricDataOutput, r: CompletableFuture<HolderLookup.Provider>) : FabricRecipeProvider(o, r) {
     override fun generateRecipes(e: RecipeExporter) {
-         e.createFence(VVBlocks.BRICK_FENCE, Blocks.BRICKS, Items.BRICK)
+         e.createFence(VVBlocks.BRICK_FENCE, Blocks.BRICKS, Items.BRICK, true)
     }
 }

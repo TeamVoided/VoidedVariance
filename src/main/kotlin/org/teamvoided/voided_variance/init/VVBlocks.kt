@@ -24,7 +24,7 @@ object VVBlocks {
         "infested_mossy_cobblestone", InfestedBlock(
             Blocks.MOSSY_COBBLESTONE, AbstractBlock.Settings.create().mapColor(MapColor.CLAY)
         )
-    )
+    ).pickaxe()
     val INFESTED_COBBLED_DEEPSLATE =
         register("infested_cobbled_deepslate", InfestedBlock(Blocks.COBBLED_DEEPSLATE, deepslate())).pickaxe()
     val INFESTED_DEEPSLATE_BRICKS =
