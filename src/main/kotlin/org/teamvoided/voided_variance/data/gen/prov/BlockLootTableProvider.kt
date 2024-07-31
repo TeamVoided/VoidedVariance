@@ -20,5 +20,4 @@ class BlockLootTableProvider(o: FabricDataOutput, r: CompletableFuture<HolderLoo
             }
         }
     }
-
 }

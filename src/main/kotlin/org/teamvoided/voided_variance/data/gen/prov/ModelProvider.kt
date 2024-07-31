@@ -23,6 +23,7 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
                 else -> gen.registerSimpleCubeAll(block)
             }
         }
+
         gen.fence(VVBlocks.BRICK_FENCE, Blocks.BRICKS)
     }
 

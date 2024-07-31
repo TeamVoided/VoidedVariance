@@ -7,6 +7,7 @@ import net.minecraft.sound.BlockSoundGroup
 import org.teamvoided.voided_variance.VoidedVariance.id
 import org.teamvoided.voided_variance.utils.register
 
+@Suppress("unused")
 object VVBlocks {
     val BLOCKS = mutableListOf<Block>()
 
@@ -54,7 +55,7 @@ object VVBlocks {
         return this
     }
 
-    fun Block.pickaxe(): Block {
+    private fun Block.pickaxe(): Block {
         PICKAXABLE.add(this)
         return this
     }
@@ -75,7 +76,8 @@ object VVBlocks {
     }
 
 
-    fun deepslate() = AbstractBlock.Settings.create().mapColor(MapColor.DEEPSLATE).sounds(BlockSoundGroup.DEEPSLATE)
+    private fun deepslate(): AbstractBlock.Settings =
+        AbstractBlock.Settings.create().mapColor(MapColor.DEEPSLATE).sounds(BlockSoundGroup.DEEPSLATE)
 
     fun register(id: String, item: Block): Block {
         val holder = registerNoItem(id, item)
