@@ -5,6 +5,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.init.VVItems
+import org.teamvoided.voided_variance.init.VVTabs
 
 @Suppress("unused")
 object VoidedVariance {
@@ -16,6 +17,7 @@ object VoidedVariance {
     fun init() {
         VVItems.init()
         VVBlocks.init()
+        VVTabs.init()
     }
 
     fun id(path: String) = Identifier.of(MODID, path)

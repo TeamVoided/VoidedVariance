@@ -3,6 +3,7 @@ package org.teamvoided.voided_variance.utils
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider
 import net.minecraft.block.Block
 import net.minecraft.item.Item
+import net.minecraft.item.ItemGroup
 import net.minecraft.registry.Holder
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
@@ -18,7 +19,12 @@ val Item.id get() = Registries.ITEM.getId(this)
 val Block.id get() = Registries.BLOCK.getId(this)
 
 
-fun <T> FabricTagProvider<T>.FabricTagBuilder.addAll(list: Collection<T>): FabricTagProvider<T>.FabricTagBuilder {
+fun ItemGroup.ItemStackCollector.addItems(list: Iterable<Item>) {
+    this.addStacks(list.map(Item::getDefaultStack))
+}
+
+
+fun <T> FabricTagProvider<T>.FabricTagBuilder.addAll(list: Iterable<T>): FabricTagProvider<T>.FabricTagBuilder {
     list.forEach{this.add(it)}
     return this
 }
