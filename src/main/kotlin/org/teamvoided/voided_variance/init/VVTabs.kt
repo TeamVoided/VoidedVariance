@@ -14,17 +14,16 @@ import org.teamvoided.voided_variance.utils.*
 object VVTabs {
     val DUSK_AUTUMN_TAB = register("voided_variance",
         FabricItemGroup.builder()
-            .icon { VVBlocks.BRICK_FENCE.asItem().defaultStack }
+            .icon { VVBlocks.REDSTONE_LANTERN.asItem().defaultStack }
             .name(Text.translatable("itemGroup.voided_variance.voided_variance"))
             .entries { _, entries ->
                 if (isDev()) {
                     entries.addItems(VVBlocks.BLOCKS.map(Block::asItem))
                     return@entries
                 }
-
-                entries.addItem(VVBlocks.BRICK_FENCE)
-
                 entries.addItem(
+                    VVBlocks.BRICK_FENCE,
+
                     VVBlocks.INFESTED_MOSSY_COBBLESTONE,
                     VVBlocks.INFESTED_COBBLED_DEEPSLATE,
                     VVBlocks.INFESTED_DEEPSLATE_BRICKS,
@@ -32,8 +31,9 @@ object VVTabs {
                     VVBlocks.INFESTED_DEEPSLATE_TILES,
                     VVBlocks.INFESTED_CRACKED_DEEPSLATE_TILES,
                     VVBlocks.INFESTED_POLISHED_DEEPSLATE,
-                )
 
+                    VVBlocks.REDSTONE_LANTERN,
+                )
             }.build()
     )
 
@@ -42,6 +42,8 @@ object VVTabs {
             it.addAfter(Blocks.BRICK_WALL, VVBlocks.BRICK_FENCE)
         }
         addToTab(ItemGroups.FUNCTIONAL_BLOCKS) {
+            it.addBefore(Blocks.CHAIN, VVBlocks.REDSTONE_LANTERN)
+
             it.addAfter(Blocks.INFESTED_COBBLESTONE, VVBlocks.INFESTED_MOSSY_COBBLESTONE)
             it.addAfter(
                 Blocks.INFESTED_DEEPSLATE,

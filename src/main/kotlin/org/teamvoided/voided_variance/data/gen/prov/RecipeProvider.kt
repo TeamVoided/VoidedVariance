@@ -7,11 +7,13 @@ import net.minecraft.data.server.recipe.RecipeExporter
 import net.minecraft.item.Items
 import net.minecraft.registry.HolderLookup
 import org.teamvoided.voided_variance.init.VVBlocks
-import org.teamvoided.voided_variance.utils.createFence
+import org.teamvoided.voided_variance.utils.datagen.createFence
+import org.teamvoided.voided_variance.utils.datagen.lantern
 import java.util.concurrent.CompletableFuture
 
-class RecipeProvider (o: FabricDataOutput, r: CompletableFuture<HolderLookup.Provider>) : FabricRecipeProvider(o, r) {
+class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Provider>) : FabricRecipeProvider(o, r) {
     override fun generateRecipes(e: RecipeExporter) {
-         e.createFence(VVBlocks.BRICK_FENCE, Blocks.BRICKS, Items.BRICK, true)
+        e.createFence(VVBlocks.BRICK_FENCE, Blocks.BRICKS, Items.BRICK, true)
+        e.lantern(VVBlocks.REDSTONE_LANTERN, Items.REDSTONE_TORCH)
     }
 }

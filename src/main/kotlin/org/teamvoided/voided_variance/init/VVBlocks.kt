@@ -2,9 +2,11 @@ package org.teamvoided.voided_variance.init
 
 import net.minecraft.block.*
 import net.minecraft.block.AbstractBlock.Settings.copy
+import net.minecraft.block.Blocks.luminanceOf
 import net.minecraft.registry.Registries
 import net.minecraft.sound.BlockSoundGroup
 import org.teamvoided.voided_variance.VoidedVariance.id
+import org.teamvoided.voided_variance.block.RedstoneLanternBlock
 import org.teamvoided.voided_variance.utils.register
 
 @Suppress("unused")
@@ -30,19 +32,28 @@ object VVBlocks {
     val INFESTED_DEEPSLATE_BRICKS =
         register("infested_deepslate_bricks", InfestedBlock(Blocks.DEEPSLATE_BRICKS, deepslate())).pickaxe()
     val INFESTED_CRACKED_DEEPSLATE_BRICKS =
-        register("infested_cracked_deepslate_bricks", InfestedBlock(Blocks.CRACKED_DEEPSLATE_BRICKS, deepslate())).pickaxe()
+        register(
+            "infested_cracked_deepslate_bricks",
+            InfestedBlock(Blocks.CRACKED_DEEPSLATE_BRICKS, deepslate())
+        ).pickaxe()
     val INFESTED_DEEPSLATE_TILES =
         register("infested_deepslate_tiles", InfestedBlock(Blocks.DEEPSLATE_TILES, deepslate())).pickaxe()
     val INFESTED_CRACKED_DEEPSLATE_TILES =
-        register("infested_cracked_deepslate_tiles", InfestedBlock(Blocks.CRACKED_DEEPSLATE_TILES, deepslate())).pickaxe()
+        register(
+            "infested_cracked_deepslate_tiles",
+            InfestedBlock(Blocks.CRACKED_DEEPSLATE_TILES, deepslate())
+        ).pickaxe()
     val INFESTED_POLISHED_DEEPSLATE =
         register("infested_polished_deepslate", InfestedBlock(Blocks.POLISHED_DEEPSLATE, deepslate())).pickaxe()
 
     // Brick fence
     val BRICK_FENCE = register("brick_fence", FenceBlock(copy(Blocks.BRICKS))).pickaxe()
 
-    fun init() = Unit
+    val REDSTONE_LANTERN = register(
+        "redstone_lantern", RedstoneLanternBlock(copy(Blocks.LANTERN).luminance(luminanceOf(8)))
+    ).pickaxe().cutout()
 
+    fun init() = Unit
 
 
     fun Block.cutout(): Block {

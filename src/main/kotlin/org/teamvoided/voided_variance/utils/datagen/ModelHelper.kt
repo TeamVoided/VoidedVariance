@@ -1,9 +1,15 @@
-package org.teamvoided.voided_variance.utils
+package org.teamvoided.voided_variance.utils.datagen
 
 import net.minecraft.block.Block
-import net.minecraft.data.client.model.BlockStateModelGenerator
-import net.minecraft.data.client.model.Models
-import net.minecraft.data.client.model.Texture
+import net.minecraft.data.client.model.*
+import net.minecraft.util.Identifier
+
+
+fun Block.model(): Identifier = ModelIds.getBlockModelId(this)
+fun Block.model(str: String) = this.model().suffix(str)
+fun Identifier.suffix(str: String) = Identifier.of(this.namespace, "${this.path}$str")
+
+fun Identifier.toVariant(): BlockStateVariant = BlockStateVariant.create().put(VariantSettings.MODEL, this)
 
 fun BlockStateModelGenerator.fence(fenceBlock: Block, reference: Block) {
     val texture = Texture.texture(reference)
