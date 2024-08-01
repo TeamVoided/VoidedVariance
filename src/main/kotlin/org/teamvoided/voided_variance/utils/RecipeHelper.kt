@@ -15,7 +15,7 @@ fun RecipeExporter.createFence(
     fence: ItemConvertible, block: ItemConvertible, item: ItemConvertible,
     stone: Boolean = false
 ) {
-    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, fence, 2)
+    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, fence, if (stone) 6 else 3)
         .pattern("#-#")
         .pattern("#-#")
         .ingredient('#', block)
