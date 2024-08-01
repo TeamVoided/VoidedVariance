@@ -1,7 +1,6 @@
 package org.teamvoided.voided_variance.init
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.item.ItemGroup
@@ -10,8 +9,7 @@ import net.minecraft.registry.Holder
 import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import org.teamvoided.voided_variance.VoidedVariance.id
-import org.teamvoided.voided_variance.utils.addItems
-import org.teamvoided.voided_variance.utils.registerHolder
+import org.teamvoided.voided_variance.utils.*
 
 object VVTabs {
     val DUSK_AUTUMN_TAB = register("voided_variance",
@@ -19,15 +17,29 @@ object VVTabs {
             .icon { VVBlocks.BRICK_FENCE.asItem().defaultStack }
             .name(Text.translatable("itemGroup.voided_variance.voided_variance"))
             .entries { _, entries ->
-                entries.addItems(VVBlocks.BLOCKS.map(Block::asItem))
+                if (isDev()) {
+                    entries.addItems(VVBlocks.BLOCKS.map(Block::asItem))
+                    return@entries
+                }
+                entries.addItem(
+                    VVBlocks.INFESTED_MOSSY_COBBLESTONE,
+                    VVBlocks.INFESTED_COBBLED_DEEPSLATE,
+                    VVBlocks.INFESTED_DEEPSLATE_BRICKS,
+                    VVBlocks.INFESTED_CRACKED_DEEPSLATE_BRICKS,
+                    VVBlocks.INFESTED_DEEPSLATE_TILES,
+                    VVBlocks.INFESTED_CRACKED_DEEPSLATE_TILES,
+                    VVBlocks.INFESTED_POLISHED_DEEPSLATE,
+                )
+
+                entries.addItem(VVBlocks.BRICK_FENCE)
+
             }.build()
     )
 
     fun init() {
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.BUILDING_BLOCKS)
-            .register(ItemGroupEvents.ModifyEntries {
-                it.addAfter(Blocks.BRICK_WALL, VVBlocks.BRICK_FENCE)
-            })
+        addToTab(ItemGroups.BUILDING_BLOCKS) {
+            it.addAfter(Blocks.BRICK_WALL, VVBlocks.BRICK_FENCE)
+        }
     }
 
 
