@@ -24,7 +24,7 @@ class BlockTagProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Pr
 
     private fun conventionalTags() {
         getOrCreateTagBuilder(ConventionalBlockTags.COBBLESTONES)
-            .add(VVBlocks.INFESTED_COBBLED_DEEPSLATE, VVBlocks.INFESTED_MOSSY_COBBLESTONE)
+            .add(VVBlocks.INFESTED_MOSSY_COBBLESTONE, VVBlocks.INFESTED_COBBLED_DEEPSLATE)
 
     }
 

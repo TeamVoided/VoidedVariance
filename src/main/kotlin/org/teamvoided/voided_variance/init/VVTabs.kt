@@ -21,6 +21,9 @@ object VVTabs {
                     entries.addItems(VVBlocks.BLOCKS.map(Block::asItem))
                     return@entries
                 }
+
+                entries.addItem(VVBlocks.BRICK_FENCE)
+
                 entries.addItem(
                     VVBlocks.INFESTED_MOSSY_COBBLESTONE,
                     VVBlocks.INFESTED_COBBLED_DEEPSLATE,
@@ -31,14 +34,24 @@ object VVTabs {
                     VVBlocks.INFESTED_POLISHED_DEEPSLATE,
                 )
 
-                entries.addItem(VVBlocks.BRICK_FENCE)
-
             }.build()
     )
 
     fun init() {
         addToTab(ItemGroups.BUILDING_BLOCKS) {
             it.addAfter(Blocks.BRICK_WALL, VVBlocks.BRICK_FENCE)
+        }
+        addToTab(ItemGroups.FUNCTIONAL_BLOCKS) {
+            it.addAfter(Blocks.INFESTED_COBBLESTONE, VVBlocks.INFESTED_MOSSY_COBBLESTONE)
+            it.addAfter(
+                Blocks.INFESTED_DEEPSLATE,
+                VVBlocks.INFESTED_COBBLED_DEEPSLATE,
+                VVBlocks.INFESTED_DEEPSLATE_BRICKS,
+                VVBlocks.INFESTED_CRACKED_DEEPSLATE_BRICKS,
+                VVBlocks.INFESTED_DEEPSLATE_TILES,
+                VVBlocks.INFESTED_CRACKED_DEEPSLATE_TILES,
+                VVBlocks.INFESTED_POLISHED_DEEPSLATE,
+            )
         }
     }
 
