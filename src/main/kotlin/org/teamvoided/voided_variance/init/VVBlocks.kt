@@ -87,6 +87,7 @@ object VVBlocks {
     val END_STONE_SLAB = register("end_stone_slab", Blocks.END_STONE.toSlab()).pickaxe()
     val QUARTZ_BRICKS_SLAB = register("quartz_bricks_slab", Blocks.QUARTZ_BRICKS.toSlab()).pickaxe()
 
+    val SNOW_SLAB = register("snow_slab", Blocks.SNOW_BLOCK.toSlab()).shovel()
 
     // Walls
     val STONE_WALL = register("stone_wall", Blocks.STONE.toWall())

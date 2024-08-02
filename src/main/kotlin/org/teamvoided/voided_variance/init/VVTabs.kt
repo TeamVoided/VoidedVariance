@@ -45,7 +45,7 @@ object VVTabs {
         addToTab(ItemGroups.BUILDING_BLOCKS) {
             it.addAfter(Blocks.BRICK_WALL, VVBlocks.BRICK_FENCE)
 
-            it.addBefore(Blocks.STONE, Blocks.SNOW_BLOCK, VVBlocks.SNOW_STAIR, VVBlocks.SNOW_WALL)
+            it.addBefore(Blocks.STONE, Blocks.SNOW_BLOCK, VVBlocks.SNOW_STAIR, VVBlocks.SNOW_SLAB, VVBlocks.SNOW_WALL)
 
             it.addAfter(Blocks.STONE_SLAB, VVBlocks.STONE_WALL)
 

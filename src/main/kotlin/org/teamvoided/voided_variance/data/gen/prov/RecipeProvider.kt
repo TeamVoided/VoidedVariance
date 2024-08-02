@@ -19,7 +19,7 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
         e.lantern(VVBlocks.REDSTONE_LANTERN, Items.REDSTONE_TORCH)
 
         STAIRS.forEach { e.createStair(it, (it as VStairsBlock).block, it != VVBlocks.SNOW_STAIR) }
-        SLABS.forEach { e.createSlab(it, (it as VSlabBlock).block, true) }
+        SLABS.filter { it != VVBlocks.SNOW_SLAB }.forEach { e.createSlab(it, (it as VSlabBlock).block, true) }
         WALLS.forEach { e.createWall(it, (it as VWallBlock).block, it != VVBlocks.SNOW_WALL) }
     }
 }

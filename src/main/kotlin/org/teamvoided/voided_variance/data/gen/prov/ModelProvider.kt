@@ -16,7 +16,7 @@ import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.utils.datagen.*
 
 class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
-    private val blockExclude = listOf(
+    private val blockExclude = setOf(
         VVBlocks.BRICK_FENCE,
         VVBlocks.REDSTONE_LANTERN,
 
@@ -24,11 +24,7 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         VVBlocks.CUT_SANDSTONE_STAIR,
         VVBlocks.CUT_RED_SANDSTONE_STAIR,
 
-        VVBlocks.SNOW_WALL,
-        VVBlocks.SMOOTH_SANDSTONE_WALL,
-        VVBlocks.SMOOTH_RED_SANDSTONE_WALL,
-        VVBlocks.SMOOTH_QUARTZ_WALL,
-        VVBlocks.QUARTZ_WALL,
+        VVBlocks.SNOW_SLAB,
 
         VVBlocks.SNOW_WALL,
         VVBlocks.SMOOTH_SANDSTONE_WALL,
@@ -59,6 +55,8 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         gen.stairs(VVBlocks.SNOW_STAIR, Blocks.SNOW)
         gen.stairs(VVBlocks.CUT_SANDSTONE_STAIR, mc("block/sandstone_top"), Blocks.CUT_SANDSTONE.model())
         gen.stairs(VVBlocks.CUT_RED_SANDSTONE_STAIR, mc("block/red_sandstone_top"), Blocks.CUT_RED_SANDSTONE.model())
+
+        gen.slab(VVBlocks.SNOW_SLAB, Blocks.SNOW, Blocks.SNOW_BLOCK)
 
         listOf(
             Pair(VVBlocks.SNOW_WALL, Blocks.SNOW.model()),

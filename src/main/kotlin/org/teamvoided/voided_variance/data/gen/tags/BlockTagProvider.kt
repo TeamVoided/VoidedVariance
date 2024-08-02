@@ -29,7 +29,7 @@ class BlockTagProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Pr
             .add(VVBlocks.OBSIDIAN_STAIR, VVBlocks.OBSIDIAN_SLAB, VVBlocks.OBSIDIAN_WALL)
             .add(VVBlocks.END_STONE_STAIR, VVBlocks.END_STONE_SLAB, VVBlocks.END_STONE_WALL)
 
-        getOrCreateTagBuilder(BlockTags.SNOW).add(VVBlocks.SNOW_STAIR, VVBlocks.SNOW_WALL)
+        getOrCreateTagBuilder(BlockTags.SNOW).add(VVBlocks.SNOW_STAIR, VVBlocks.SNOW_SLAB, VVBlocks.SNOW_WALL)
     }
 
     private fun conventionalTags() {

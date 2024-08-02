@@ -29,6 +29,9 @@ fun BlockStateModelGenerator.slab(block: Block) = slab(block, block)
 fun BlockStateModelGenerator.slab(block: Block, texture: Block) =
     slab(block, texture, texture, texture, texture)
 
+fun BlockStateModelGenerator.slab(block: Block, texture: Block, full: Block) =
+    slab(block, slabTexture(texture), full)
+
 fun BlockStateModelGenerator.slab(block: Block, bottom: Block, side: Block, top: Block, full: Block) =
     slab(
         block, Texture.texture(block.model())
@@ -45,6 +48,11 @@ fun BlockStateModelGenerator.slab(block: Block, texture: Texture, full: Block) {
     this.blockStateCollector.accept(BlockStateModelGenerator.createSlabBlockState(block, id, id2, id3))
     this.registerParentedItemModel(block, id)
 }
+
+fun slabTexture(texture: Block): Texture = Texture.texture(texture.model())
+    .put(TextureKey.BOTTOM, texture.model())
+    .put(TextureKey.SIDE, texture.model())
+    .put(TextureKey.TOP, texture.model())
 
 // stairs
 fun BlockStateModelGenerator.stairs(block: Block) =
