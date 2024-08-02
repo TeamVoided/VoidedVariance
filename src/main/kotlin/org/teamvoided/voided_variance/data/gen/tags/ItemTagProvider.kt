@@ -19,10 +19,18 @@ class ItemTagProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Pro
 
     private fun copyVanillaTags() {
         copy(BlockTags.FENCES, ItemTags.FENCES)
+
+        copy(BlockTags.STAIRS, ItemTags.STAIRS)
+        copy(BlockTags.SLABS, ItemTags.SLABS)
+        copy(BlockTags.WALLS, ItemTags.WALLS)
     }
 
     private fun copyConventionalTags() {
         copy(ConventionalBlockTags.COBBLESTONES, ConventionalItemTags.COBBLESTONES)
+
+        copy(ConventionalBlockTags.SANDSTONE_STAIRS, ConventionalItemTags.SANDSTONE_STAIRS)
+        copy(ConventionalBlockTags.UNCOLORED_SANDSTONE_STAIRS, ConventionalItemTags.UNCOLORED_SANDSTONE_STAIRS)
+        copy(ConventionalBlockTags.RED_SANDSTONE_STAIRS, ConventionalItemTags.RED_SANDSTONE_STAIRS)
     }
 
 }

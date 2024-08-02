@@ -20,9 +20,47 @@ fun RecipeExporter.createFence(
         .pattern("#-#")
         .ingredient('#', block)
         .ingredient('-', item)
-        .itemCriterion(item)
+        .criterion(item)
         .offerTo(this)
     if (stone) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, fence, block, 1)
+}
+
+fun RecipeExporter.createSlab(
+    slab: ItemConvertible, block: ItemConvertible,
+    stone: Boolean = false
+) {
+    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, slab, 6)
+        .pattern("###")
+        .ingredient('#', block)
+        .criterion(block)
+        .offerTo(this)
+    if (stone) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, slab, block, 1)
+}
+
+fun RecipeExporter.createStair(
+    stair: ItemConvertible, block: ItemConvertible,
+    stone: Boolean = false
+) {
+    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, stair, 4)
+        .pattern("#  ")
+        .pattern("## ")
+        .pattern("###")
+        .ingredient('#', block)
+        .criterion(block)
+        .offerTo(this)
+    if (stone) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, stair, block, 1)
+}
+fun RecipeExporter.createWall(
+    wall: ItemConvertible, block: ItemConvertible,
+    stone: Boolean = false
+) {
+    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, wall, 6)
+        .pattern("###")
+        .pattern("###")
+        .ingredient('#', block)
+        .criterion(block)
+        .offerTo(this)
+    if (stone) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, wall, block, 1)
 }
 
 fun RecipeExporter.lantern(lantern: ItemConvertible, torch: ItemConvertible) {
@@ -32,15 +70,14 @@ fun RecipeExporter.lantern(lantern: ItemConvertible, torch: ItemConvertible) {
         .pattern("XXX")
         .ingredient('#', torch)
         .ingredient('X', Items.IRON_NUGGET)
-        .itemCriterion(Items.IRON_NUGGET)
-        .itemCriterion(Items.IRON_INGOT)
+        .criterion(Items.IRON_NUGGET)
+        .criterion(Items.IRON_INGOT)
         .offerTo(this)
 }
 
 
-
-fun RecipeJsonFactory.itemCriterion(item: ItemConvertible): RecipeJsonFactory =
+fun RecipeJsonFactory.criterion(item: ItemConvertible): RecipeJsonFactory =
     this.criterion(hasItem(item), conditionsFromItem(item))
 
-fun RecipeJsonFactory.tagCriterion(tag: TagKey<Item>): RecipeJsonFactory =
+fun RecipeJsonFactory.criterion(tag: TagKey<Item>): RecipeJsonFactory =
     this.criterion("has_${tag.id.path}", conditionsFromTag(tag))

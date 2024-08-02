@@ -21,4 +21,5 @@ object VoidedVariance {
     }
 
     fun id(path: String) = Identifier.of(MODID, path)
+    fun mc(path: String) = Identifier.ofDefault(path)
 }
