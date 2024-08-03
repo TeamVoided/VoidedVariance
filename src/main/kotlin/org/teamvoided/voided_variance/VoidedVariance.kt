@@ -15,11 +15,12 @@ object VoidedVariance {
     val log: Logger = LoggerFactory.getLogger(VoidedVariance::class.simpleName)
 
     fun init() {
+        log.info("My Void, your Variance")
         VVItems.init()
         VVBlocks.init()
         VVTabs.init()
     }
 
-    fun id(path: String) = Identifier.of(MODID, path)
-    fun mc(path: String) = Identifier.ofDefault(path)
+    fun id(path: String): Identifier = Identifier.of(MODID, path)
+    fun mc(path: String): Identifier = Identifier.ofDefault(path)
 }
