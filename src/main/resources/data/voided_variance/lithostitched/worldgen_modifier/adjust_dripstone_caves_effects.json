@@ -1,0 +1,12 @@
+{
+  "type": "lithostitched:replace_effects",
+  "biomes": [
+    "minecraft:dripstone_caves"
+  ],
+  "effects": {
+    "water_color": 13220523,
+    "water_fog_color": 13220523,
+    "grass_color": 10665583,
+    "foliage_color": 10665583
+  }
+}

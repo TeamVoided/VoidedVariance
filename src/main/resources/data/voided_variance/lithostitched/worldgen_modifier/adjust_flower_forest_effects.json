@@ -1,0 +1,12 @@
+{
+  "type": "lithostitched:replace_effects",
+  "biomes": [
+    "minecraft:flower_forest"
+  ],
+  "effects": {
+    "water_color": 5606911,
+    "water_fog_color": 3100302,
+    "grass_color": 7456077,
+    "foliage_color": 5747754
+  }
+}

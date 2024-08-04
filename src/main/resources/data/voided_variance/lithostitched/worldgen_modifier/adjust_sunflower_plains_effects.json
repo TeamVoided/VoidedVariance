@@ -1,0 +1,11 @@
+{
+  "type": "lithostitched:replace_effects",
+  "biomes": [
+    "minecraft:sunflower_plains"
+  ],
+  "effects": {
+    "water_color": 4818173,
+    "grass_color": 8045142,
+    "foliage_color": 7453261
+  }
+}

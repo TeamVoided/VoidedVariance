@@ -1,0 +1,12 @@
+{
+  "type": "lithostitched:replace_effects",
+  "biomes": [
+    "minecraft:deep_dark"
+  ],
+  "effects": {
+    "water_color": 415592,
+    "water_fog_color": 415592,
+    "grass_color": 2012068,
+    "foliage_color": 2012068
+  }
+}
