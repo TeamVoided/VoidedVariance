@@ -22,6 +22,10 @@ val curse_id: String? by project
 repositories {
     maven("https://teamvoided.org/releases")
     maven("https://maven.terraformersmc.com/") { name = "Terraformers" }
+    exclusiveContent {
+        forRepository { maven("https://api.modrinth.com/maven") }
+        filter { includeGroup("maven.modrinth") }
+    }
     mavenCentral()
 }
 
@@ -44,6 +48,8 @@ dependencies {
 
     modCompileOnly("${libs.emi.get()}:api")
     modLocalRuntime(libs.emi)
+
+    modImplementation(libs.lithostitched)
 }
 
 loom {
@@ -103,14 +109,18 @@ publishScript {
 uploadConfig {
 //    debugMode = true
     modrinthId = modrinth_id
-    curseId = curse_id
+//    curseId = curse_id
 
     changeLog = " - Initial release"
 
     // FabricApi
     modrinthDependency("P7dR8mSH", uploadConfig.REQUIRED)
-    curseDependency("fabric-api", uploadConfig.REQUIRED)
+//    curseDependency("fabric-api", uploadConfig.REQUIRED)
+
     // Fabric Language Kotlin
     modrinthDependency("Ha28R6CL", uploadConfig.REQUIRED)
-    curseDependency("fabric-language-kotlin", uploadConfig.REQUIRED)
+//    curseDependency("fabric-language-kotlin", uploadConfig.REQUIRED)
+
+    // Lithostitched
+    modrinthDependency("XaDC71GB", uploadConfig.OPTIONAL)
 }

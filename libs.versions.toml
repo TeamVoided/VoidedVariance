@@ -6,11 +6,13 @@ iridium = "3.3.1"
 #farrow = "1.0.0+arrow.1.2.4"
 modmenu = "11.0.0"
 emi = "1.1.10+1.21"
+lithostitched = "1.2.5" # 1.2.5
 
 [libraries]
 #farrow = { module = "net.wiredtomato:farrow", version.ref = "farrow" }
 modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu" }
 emi = { module = "dev.emi:emi-fabric", version.ref = "emi" }
+lithostitched = { module = "maven.modrinth:lithostitched", version.ref = "lithostitched" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
