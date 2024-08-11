@@ -111,7 +111,7 @@ uploadConfig {
     modrinthId = modrinth_id
 //    curseId = curse_id
 
-    changeLog = " - Changed some biome colors (Needs Lithostitched as a dependency)"
+    changeLog = " - fixed slab stonecutting recipes"
 
     // FabricApi
     modrinthDependency("P7dR8mSH", uploadConfig.REQUIRED)

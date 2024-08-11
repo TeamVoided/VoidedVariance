@@ -34,7 +34,7 @@ fun RecipeExporter.createSlab(
         .ingredient('#', block)
         .criterion(block)
         .offerTo(this)
-    if (stone) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, slab, block, 1)
+    if (stone) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, slab, block, 2)
 }
 
 fun RecipeExporter.createStair(
