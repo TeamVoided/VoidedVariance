@@ -13,7 +13,7 @@ class EnLangProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
 
     override fun generateTranslations(lookup: HolderLookup.Provider, gen: TranslationBuilder) {
         VVItems.ITEMS.forEach{ gen.add(it, it.id.lang())}
-        VVTabs.DUSK_AUTUMN_TAB.registryKey.let { gen.add(it, it.value.lang()) }
+        VVTabs.VOIDED_VARIANCE.registryKey.let { gen.add(it, it.value.lang()) }
     }
 
     private fun Identifier.lang(): String = this.path.titleCase()

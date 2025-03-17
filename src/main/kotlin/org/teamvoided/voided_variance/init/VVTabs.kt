@@ -15,7 +15,7 @@ import org.teamvoided.voided_variance.utils.datagen.STAIRS
 import org.teamvoided.voided_variance.utils.datagen.WALLS
 
 object VVTabs {
-    val DUSK_AUTUMN_TAB = register("voided_variance",
+    val VOIDED_VARIANCE = register("voided_variance",
         FabricItemGroup.builder()
             .icon { VVBlocks.REDSTONE_LANTERN.asItem().defaultStack }
             .name(Text.translatable("itemGroup.voided_variance.voided_variance"))
