@@ -69,7 +69,7 @@ fun Block.needsDiamond(): Block {
     return this
 }
 
-fun Block.toStair(): Block {
+fun Block.toStairs(): Block {
     val block = VStairsBlock(this, copy(this))
     STAIRS.add(block)
     return block
@@ -85,4 +85,17 @@ fun Block.toWall(): Block {
     val block = VWallBlock(this, copy(this))
     WALLS.add(block)
     return block
+}
+
+fun Block.wall(): Block {
+    WALLS.add(this)
+    return this
+}
+fun Block.stairs(): Block {
+    STAIRS.add(this)
+    return this
+}
+fun Block.slab(): Block {
+    SLABS.add(this)
+    return this
 }
