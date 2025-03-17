@@ -43,29 +43,29 @@ object VVBlocks {
 
 
     // Stairs
-    val SMOOTH_STONE_STAIR = register("smooth_stone_stair", Blocks.SMOOTH_STONE.toStair()).pickaxe()
+    val SMOOTH_STONE_STAIR = register("smooth_stone_stairs", Blocks.SMOOTH_STONE.toStair()).pickaxe()
     val CRACKED_STONE_BRICKS_STAIR =
-        register("cracked_stone_bricks_stair", Blocks.CRACKED_STONE_BRICKS.toStair()).pickaxe()
+        register("cracked_stone_bricks_stairs", Blocks.CRACKED_STONE_BRICKS.toStair()).pickaxe()
     val CRACKED_DEEPSLATE_TILES_STAIR =
-        register("cracked_deepslate_tiles_stair", Blocks.CRACKED_DEEPSLATE_TILES.toStair()).pickaxe()
-    val CALCITE_STAIR = register("calcite_stair", Blocks.CALCITE.toStair()).pickaxe()
-    val DRIPSTONE_STAIR = register("dripstone_stair", Blocks.DRIPSTONE_BLOCK.toStair()).pickaxe()
+        register("cracked_deepslate_tiles_stairs", Blocks.CRACKED_DEEPSLATE_TILES.toStair()).pickaxe()
+    val CALCITE_STAIR = register("calcite_stairs", Blocks.CALCITE.toStair()).pickaxe()
+    val DRIPSTONE_STAIR = register("dripstone_stairs", Blocks.DRIPSTONE_BLOCK.toStair()).pickaxe()
     val CRACKED_DEEPSLATE_BRICKS_STAIR =
-        register("cracked_deepslate_bricks_stair", Blocks.CRACKED_DEEPSLATE_BRICKS.toStair()).pickaxe()
-    val PACKED_MUD_STAIR = register("packed_mud_stair", Blocks.PACKED_MUD.toStair()).pickaxe()
-    val CUT_SANDSTONE_STAIR = register("cut_sandstone_stair", Blocks.CUT_SANDSTONE.toStair()).pickaxe()
-    val CUT_RED_SANDSTONE_STAIR = register("cut_red_sandstone_stair", Blocks.CUT_RED_SANDSTONE.toStair()).pickaxe()
+        register("cracked_deepslate_bricks_stairs", Blocks.CRACKED_DEEPSLATE_BRICKS.toStair()).pickaxe()
+    val PACKED_MUD_STAIR = register("packed_mud_stairs", Blocks.PACKED_MUD.toStair()).pickaxe()
+    val CUT_SANDSTONE_STAIR = register("cut_sandstone_stairs", Blocks.CUT_SANDSTONE.toStair()).pickaxe()
+    val CUT_RED_SANDSTONE_STAIR = register("cut_red_sandstone_stairs", Blocks.CUT_RED_SANDSTONE.toStair()).pickaxe()
     val CRACKED_NETHER_BRICKS_STAIR =
-        register("cracked_nether_bricks_stair", Blocks.CRACKED_NETHER_BRICKS.toStair()).pickaxe()
-    val SMOOTH_BASALT_STAIR = register("smooth_basalt_stair", Blocks.SMOOTH_BASALT.toStair()).pickaxe()
+        register("cracked_nether_bricks_stairs", Blocks.CRACKED_NETHER_BRICKS.toStair()).pickaxe()
+    val SMOOTH_BASALT_STAIR = register("smooth_basalt_stairs", Blocks.SMOOTH_BASALT.toStair()).pickaxe()
     val CRACKED_POLISHED_BLACKSTONE_BRICKS_STAIR = register(
-        "cracked_polished_blackstone_bricks_stair", Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.toStair()
+        "cracked_polished_blackstone_bricks_stairs", Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.toStair()
     ).pickaxe()
-    val OBSIDIAN_STAIR = register("obsidian_stair", Blocks.OBSIDIAN.toStair()).pickaxe().needsDiamond()
-    val END_STONE_STAIR = register("end_stone_stair", Blocks.END_STONE.toStair()).pickaxe()
-    val QUARTZ_BRICKS_STAIR = register("quartz_bricks_stair", Blocks.QUARTZ_BRICKS.toStair()).pickaxe()
+    val OBSIDIAN_STAIR = register("obsidian_stairs", Blocks.OBSIDIAN.toStair()).pickaxe().needsDiamond()
+    val END_STONE_STAIR = register("end_stone_stairs", Blocks.END_STONE.toStair()).pickaxe()
+    val QUARTZ_BRICKS_STAIR = register("quartz_bricks_stairs", Blocks.QUARTZ_BRICKS.toStair()).pickaxe()
 
-    val SNOW_STAIR = register("snow_stair", Blocks.SNOW_BLOCK.toStair()).shovel()
+    val SNOW_STAIR = register("snow_stairs", Blocks.SNOW_BLOCK.toStair()).shovel()
 
     // Slabs
     val CRACKED_STONE_BRICKS_SLAB =
