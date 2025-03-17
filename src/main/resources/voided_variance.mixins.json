@@ -3,7 +3,9 @@
   "minVersion": "0.8",
   "package": "org.teamvoided.voided_variance.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [],
+  "mixins": [
+    "MangroveRootsBlockMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

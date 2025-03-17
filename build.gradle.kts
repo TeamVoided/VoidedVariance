@@ -37,7 +37,7 @@ modSettings {
     entrypoint("fabric-datagen", "org.teamvoided.voided_variance.data.gen.VoidedVarianceData")
 
 //    mixinFile("${modId()}.client.mixins.json")
-//    mixinFile("${modId()}.mixins.json")
+    mixinFile("${modId()}.mixins.json")
 //    accessWidener("${modId()}.accesswidener")
 }
 

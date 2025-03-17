@@ -2,8 +2,10 @@
 
 package org.teamvoided.voided_variance.utils.datagen
 
+import net.minecraft.block.AbstractBlock
 import net.minecraft.block.AbstractBlock.Settings.copy
 import net.minecraft.block.Block
+import net.minecraft.block.piston.PistonBehavior
 import org.teamvoided.voided_variance.block.VSlabBlock
 import org.teamvoided.voided_variance.block.VStairsBlock
 import org.teamvoided.voided_variance.block.VWallBlock
@@ -87,14 +89,18 @@ fun Block.toWall(): Block {
     return block
 }
 
+fun AbstractBlock.Settings.block(): AbstractBlock.Settings = this.pistonBehavior(PistonBehavior.BLOCK)
+
 fun Block.wall(): Block {
     WALLS.add(this)
     return this
 }
+
 fun Block.stairs(): Block {
     STAIRS.add(this)
     return this
 }
+
 fun Block.slab(): Block {
     SLABS.add(this)
     return this

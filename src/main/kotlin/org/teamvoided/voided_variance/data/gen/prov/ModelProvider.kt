@@ -65,6 +65,8 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
             Pair(VVBlocks.SMOOTH_QUARTZ_WALL, mc("block/quartz_block_bottom")),
             Pair(VVBlocks.QUARTZ_WALL, mc("block/quartz_block_side"))
         ).forEach { gen.wall(it.first, it.second) }
+
+        gen.addAxis(Blocks.MANGROVE_ROOTS)
     }
 
     override fun generateItemModels(gen: ItemModelGenerator) = Unit
@@ -90,4 +92,8 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
             )
         )
     }
+
+    private fun BlockStateModelGenerator.addAxis(block: Block) = this.blockStateCollector.accept(
+        BlockStateModelGenerator.createAxisRotatedBlockState(block, ModelIds.getBlockModelId(block))
+    )
 }
