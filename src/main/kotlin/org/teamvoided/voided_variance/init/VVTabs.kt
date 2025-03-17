@@ -116,7 +116,8 @@ object VVTabs {
 
             it.addBefore(
                 Blocks.END_STONE,
-                Blocks.OBSIDIAN, VVBlocks.OBSIDIAN_STAIR, VVBlocks.OBSIDIAN_SLAB, VVBlocks.OBSIDIAN_WALL
+                Blocks.OBSIDIAN, VVBlocks.OBSIDIAN_STAIR, VVBlocks.OBSIDIAN_SLAB, VVBlocks.OBSIDIAN_WALL,
+                Blocks.CRYING_OBSIDIAN, VVBlocks.CRYING_OBSIDIAN_STAIRS, VVBlocks.CRYING_OBSIDIAN_SLAB, VVBlocks.CRYING_OBSIDIAN_WALL
             )
             it.addAfter(
                 Blocks.END_STONE,

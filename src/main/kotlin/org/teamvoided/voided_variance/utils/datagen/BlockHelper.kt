@@ -6,9 +6,7 @@ import net.minecraft.block.AbstractBlock
 import net.minecraft.block.AbstractBlock.Settings.copy
 import net.minecraft.block.Block
 import net.minecraft.block.piston.PistonBehavior
-import org.teamvoided.voided_variance.block.VSlabBlock
-import org.teamvoided.voided_variance.block.VStairsBlock
-import org.teamvoided.voided_variance.block.VWallBlock
+import org.teamvoided.voided_variance.block.*
 
 val CUTOUT_BLOCKS = mutableSetOf<Block>()
 

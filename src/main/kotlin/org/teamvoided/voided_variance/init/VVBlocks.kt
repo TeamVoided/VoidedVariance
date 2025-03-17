@@ -6,10 +6,7 @@ import net.minecraft.block.Blocks.luminanceOf
 import net.minecraft.registry.Registries
 import net.minecraft.sound.BlockSoundGroup
 import org.teamvoided.voided_variance.VoidedVariance.id
-import org.teamvoided.voided_variance.block.RedstoneLanternBlock
-import org.teamvoided.voided_variance.block.VSlabBlock
-import org.teamvoided.voided_variance.block.VStairsBlock
-import org.teamvoided.voided_variance.block.VWallBlock
+import org.teamvoided.voided_variance.block.*
 import org.teamvoided.voided_variance.utils.datagen.*
 import org.teamvoided.voided_variance.utils.register
 
@@ -21,6 +18,7 @@ object VVBlocks {
         AbstractBlock.Settings.create().mapColor(MapColor.DEEPSLATE).sounds(BlockSoundGroup.DEEPSLATE)
 
     val obsidian = copy(Blocks.OBSIDIAN).block()
+    val cryingObsidian = copy(Blocks.CRYING_OBSIDIAN).block()
 
     // Brick fence
     val BRICK_FENCE = register("brick_fence", FenceBlock(copy(Blocks.BRICKS))).pickaxe()
@@ -71,6 +69,9 @@ object VVBlocks {
     ).pickaxe()
     val OBSIDIAN_STAIR =
         register("obsidian_stairs", VStairsBlock(Blocks.OBSIDIAN, obsidian)).stairs().pickaxe().needsDiamond()
+    val CRYING_OBSIDIAN_STAIRS =
+        register("crying_obsidian_stairs", CryingStairsBlock(Blocks.CRYING_OBSIDIAN, cryingObsidian))
+            .stairs().pickaxe().needsDiamond()
     val END_STONE_STAIR = register("end_stone_stairs", Blocks.END_STONE.toStairs()).pickaxe()
     val QUARTZ_BRICKS_STAIR = register("quartz_bricks_stairs", Blocks.QUARTZ_BRICKS.toStairs()).pickaxe()
 
@@ -94,6 +95,8 @@ object VVBlocks {
     ).pickaxe()
     val OBSIDIAN_SLAB =
         register("obsidian_slab", VSlabBlock(Blocks.OBSIDIAN, obsidian)).slab().pickaxe().needsDiamond()
+    val CRYING_OBSIDIAN_SLAB = register("crying_obsidian_slab", CryingSlabBlock(Blocks.CRYING_OBSIDIAN, cryingObsidian))
+        .slab().pickaxe().needsDiamond()
     val END_STONE_SLAB = register("end_stone_slab", Blocks.END_STONE.toSlab()).pickaxe()
     val QUARTZ_BRICKS_SLAB = register("quartz_bricks_slab", Blocks.QUARTZ_BRICKS.toSlab()).pickaxe()
 
@@ -128,6 +131,8 @@ object VVBlocks {
         "cracked_polished_blackstone_bricks_wall", Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.toWall()
     )
     val OBSIDIAN_WALL = register("obsidian_wall", VWallBlock(Blocks.OBSIDIAN, obsidian)).needsDiamond().wall()
+    val CRYING_OBSIDIAN_WALL = register("crying_obsidian_wall", CryingWallBlock(Blocks.CRYING_OBSIDIAN, cryingObsidian))
+        .needsDiamond().wall()
     val END_STONE_WALL = register("end_stone_wall", Blocks.END_STONE.toWall())
     val PURPUR_WALL = register("purpur_wall", Blocks.PURPUR_BLOCK.toWall())
     val QUARTZ_WALL = register("quartz_wall", Blocks.QUARTZ_BLOCK.toWall())
