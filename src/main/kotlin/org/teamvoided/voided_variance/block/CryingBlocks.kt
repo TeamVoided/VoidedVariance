@@ -21,7 +21,6 @@ interface CryingBlock {
                     if (direction.offsetY == 0) random.nextDouble() else 0.5 + direction.offsetY.toDouble() * 0.6
                 val f =
                     if (direction.offsetZ == 0) random.nextDouble() else 0.5 + direction.offsetZ.toDouble() * 0.6
-                println("spawned")
                 world.addParticle(
                     ParticleTypes.DRIPPING_OBSIDIAN_TEAR,
                     pos.x.toDouble() + d, pos.y.toDouble() + e, pos.z.toDouble() + f,
