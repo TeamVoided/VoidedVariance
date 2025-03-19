@@ -20,15 +20,15 @@
 		},
 		{
 			"name": "Full wall",
-			"from": [5, 0, 0],
-			"to": [11, 13, 16],
+			"from": [5, 0.01, 0],
+			"to": [11, 13.01, 16],
 			"faces": {
-				"north": {"uv": [5, 3, 11, 16], "texture": "#wall", "cullface": "north"},
+				"north": {"uv": [1, 3, 7, 16], "texture": "#wall", "cullface": "north"},
 				"east": {"uv": [0, 3, 16, 16], "texture": "#wall"},
-				"south": {"uv": [5, 3, 11, 16], "texture": "#wall", "cullface": "south"},
+				"south": {"uv": [1, 3, 7, 16], "texture": "#wall", "cullface": "south"},
 				"west": {"uv": [0, 3, 16, 16], "texture": "#wall"},
-				"up": {"uv": [5, 0, 11, 16], "texture": "#wall"},
-				"down": {"uv": [5, 0, 11, 16], "texture": "#wall", "cullface": "down"}
+				"up": {"uv": [0, 1, 16, 7], "rotation": 90, "texture": "#wall"},
+				"down": {"uv": [0, 1, 16, 7], "rotation": 90, "texture": "#wall", "cullface": "down"}
 			}
 		}
 	],
