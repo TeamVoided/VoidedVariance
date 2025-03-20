@@ -142,6 +142,8 @@ object VVBlocks {
     val SNOW_WALL = register("snow_wall", Blocks.SNOW_BLOCK.toWall()).shovel()
 
 
+    val HEAVY_CUBE = register("heavy_cube", CompositeBlock(copy(Blocks.HEAVY_CORE).nonOpaque()))
+        .pickaxe().cutout()
     // Buttons
 //    val SMOOTH_STONE_BUTTON = createStoneBtn(Blocks.SMOOTH_STONE)
 //    val DEEPSLATE_BUTTON = createStoneBtn(Blocks.DEEPSLATE)

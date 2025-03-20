@@ -8,7 +8,10 @@ import net.minecraft.block.InfestedBlock
 import net.minecraft.data.client.ItemModelGenerator
 import net.minecraft.data.client.model.*
 import net.minecraft.state.property.Properties
+import net.minecraft.state.property.Property
+import net.minecraft.util.Identifier
 import org.teamvoided.voided_variance.VoidedVariance.mc
+import org.teamvoided.voided_variance.block.CompositeBlock
 import org.teamvoided.voided_variance.block.VSlabBlock
 import org.teamvoided.voided_variance.block.VStairsBlock
 import org.teamvoided.voided_variance.block.VWallBlock
@@ -31,6 +34,8 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         VVBlocks.SMOOTH_RED_SANDSTONE_WALL,
         VVBlocks.SMOOTH_QUARTZ_WALL,
         VVBlocks.QUARTZ_WALL,
+
+        VVBlocks.HEAVY_CUBE
     )
 
     override fun generateBlockStateModels(gen: BlockStateModelGenerator) {
@@ -67,6 +72,7 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         ).forEach { gen.wall(it.first, it.second) }
 
         gen.addAxis(Blocks.MANGROVE_ROOTS)
+        gen.denseCube(VVBlocks.HEAVY_CUBE)
     }
 
     override fun generateItemModels(gen: ItemModelGenerator) = Unit
@@ -96,4 +102,31 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
     private fun BlockStateModelGenerator.addAxis(block: Block) = this.blockStateCollector.accept(
         BlockStateModelGenerator.createAxisRotatedBlockState(block, ModelIds.getBlockModelId(block))
     )
+
+    private fun BlockStateModelGenerator.denseCube(block: Block) {
+        val topModel = ModelIds.getBlockSubModelId(block, "_top")
+        val bottomModel = ModelIds.getBlockSubModelId(block, "_bottom")
+        val itemModel = TexturedModel.CUBE_BOTTOM_TOP.create(block, this.modelCollector)
+        this.registerParentedItemModel(block.asItem(), itemModel)
+        this.blockStateCollector.accept(
+            MultipartBlockStateSupplier.create(block)
+                .with(CompositeBlock.UPPER_NORTH_EAST, true, variant(topModel, VariantSettings.Rotation.R90))
+                .with(CompositeBlock.UPPER_NORTH_WEST, true, variant(topModel))
+                .with(CompositeBlock.UPPER_SOUTH_EAST, true, variant(topModel, VariantSettings.Rotation.R180))
+                .with(CompositeBlock.UPPER_SOUTH_WEST, true, variant(topModel, VariantSettings.Rotation.R270))
+                .with(CompositeBlock.LOWER_NORTH_EAST, true, variant(bottomModel, VariantSettings.Rotation.R90))
+                .with(CompositeBlock.LOWER_NORTH_WEST, true, variant(bottomModel))
+                .with(CompositeBlock.LOWER_SOUTH_EAST, true, variant(bottomModel, VariantSettings.Rotation.R180))
+                .with(CompositeBlock.LOWER_SOUTH_WEST, true, variant(bottomModel, VariantSettings.Rotation.R270))
+        )
+    }
+
+    fun <T : Comparable<T>> MultipartBlockStateSupplier.with(
+        property: Property<T>, value: T, vararg variants: BlockStateVariant
+    ) = this.with(When.create().set(property, value), *variants)
+
+    fun variant(model: Identifier) = BlockStateVariant().put(VariantSettings.MODEL, model)
+    fun variant(model: Identifier, rotation: VariantSettings.Rotation) =
+        variant(model).put(VariantSettings.Y, rotation).put(VariantSettings.UVLOCK, true)
+
 }

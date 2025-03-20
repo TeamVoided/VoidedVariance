@@ -8,7 +8,7 @@ import java.util.*
 
 
 fun Block.model(): Identifier = ModelIds.getBlockModelId(this)
-fun Block.model(str: String) = this.model().suffix(str)
+fun Block.model(sfx: String) = this.model().suffix(sfx)
 fun Identifier.suffix(str: String) = Identifier.of(this.namespace, "${this.path}$str")
 
 fun Identifier.toVariant(): BlockStateVariant = BlockStateVariant.create().put(VariantSettings.MODEL, this)
