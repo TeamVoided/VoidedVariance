@@ -31,6 +31,7 @@ import net.minecraft.world.World
 import org.teamvoided.voided_variance.utils.HEAVY_CUBE_TOOLTIP
 import org.teamvoided.voidlib.helpers.map
 import org.teamvoided.voidlib.helpers.playBlockSound
+import org.teamvoided.voidlib.helpers.scheduleFluidTick
 import net.minecraft.util.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION as PASS_TO_DEFAULT
 
 class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickInteractionAware {
@@ -52,6 +53,7 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
             if (cornerProperty != null && state.get(cornerProperty)) {
                 val newState = state.with(cornerProperty, false)
                 world.setBlockState(pos, newState)
+                if (state.get(WATERLOGGED)) world.scheduleFluidTick(pos, state)
                 if (!(entity.isCreative && entity.inventory.contains(Items.HEAVY_CORE.defaultStack))) {
                     entity.giveItemStack(ItemStack(Items.HEAVY_CORE))
                 }
@@ -75,10 +77,10 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
             return super.onInteract(stack, state, world, pos, entity, hand, hitResult)
 
         val clickedPos = getCornerPosition(hitResult).add(hitResult.side.getOffset().map { it * -2 })
-        val cornerToBeAdded = POS_TO_CORNER[clickedPos]
-            ?: return PASS_TO_DEFAULT
+        val cornerToBeAdded = POS_TO_CORNER[clickedPos] ?: return PASS_TO_DEFAULT
 
         world.setBlockState(pos, state.with(cornerToBeAdded, true))
+        if (state.get(WATERLOGGED)) world.scheduleFluidTick(pos, state)
         if (!entity.isCreative) stack.decrement(1)
         world.playBlockSound(pos, SoundEvents.BLOCK_HEAVY_CORE_PLACE, 0.8f, 1.0f)
         return ItemInteractionResult.SUCCESS
@@ -142,7 +144,6 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
     }
 
     companion object {
-
         fun getCornerPosition(hitResult: BlockHitResult): Vec3d =
             hitResult.pos.add(hitResult.side.getOffset())
                 .map { it % 1 }
@@ -162,15 +163,15 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
                 && this.get(LOWER_SOUTH_EAST) && this.get(LOWER_SOUTH_WEST)
 
 
-        val UPPER_NORTH_EAST = BooleanProperty.of("upper_north_east")
-        val UPPER_NORTH_WEST = BooleanProperty.of("upper_north_west")
-        val UPPER_SOUTH_EAST = BooleanProperty.of("upper_south_east")
-        val UPPER_SOUTH_WEST = BooleanProperty.of("upper_south_west")
+        val UPPER_NORTH_EAST: BooleanProperty = BooleanProperty.of("upper_north_east")
+        val UPPER_NORTH_WEST: BooleanProperty = BooleanProperty.of("upper_north_west")
+        val UPPER_SOUTH_EAST: BooleanProperty = BooleanProperty.of("upper_south_east")
+        val UPPER_SOUTH_WEST: BooleanProperty = BooleanProperty.of("upper_south_west")
 
-        val LOWER_NORTH_EAST = BooleanProperty.of("lower_north_east")
-        val LOWER_NORTH_WEST = BooleanProperty.of("lower_north_west")
-        val LOWER_SOUTH_EAST = BooleanProperty.of("lower_south_east")
-        val LOWER_SOUTH_WEST = BooleanProperty.of("lower_south_west")
+        val LOWER_NORTH_EAST: BooleanProperty = BooleanProperty.of("lower_north_east")
+        val LOWER_NORTH_WEST: BooleanProperty = BooleanProperty.of("lower_north_west")
+        val LOWER_SOUTH_EAST: BooleanProperty = BooleanProperty.of("lower_south_east")
+        val LOWER_SOUTH_WEST: BooleanProperty = BooleanProperty.of("lower_south_west")
 
         val PROPS = setOf(
             UPPER_NORTH_EAST, UPPER_NORTH_WEST,
@@ -179,15 +180,15 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
             LOWER_SOUTH_EAST, LOWER_SOUTH_WEST
         )
 
-        val UPPER_TOP_RIGHT_SHAPE = createCuboidShape(8.0, 8.0, 0.0, 16.0, 16.0, 8.0)
-        val UPPER_TOP_LEFT_SHAPE = createCuboidShape(0.0, 8.0, 0.0, 8.0, 16.0, 8.0)
-        val UPPER_BOTTOM_RIGHT_SHAPE = createCuboidShape(8.0, 8.0, 8.0, 16.0, 16.0, 16.0)
-        val UPPER_BOTTOM_LEFT_SHAPE = createCuboidShape(0.0, 8.0, 8.0, 8.0, 16.0, 16.0)
+        val UPPER_TOP_RIGHT_SHAPE: VoxelShape = createCuboidShape(8.0, 8.0, 0.0, 16.0, 16.0, 8.0)
+        val UPPER_TOP_LEFT_SHAPE: VoxelShape = createCuboidShape(0.0, 8.0, 0.0, 8.0, 16.0, 8.0)
+        val UPPER_BOTTOM_RIGHT_SHAPE: VoxelShape = createCuboidShape(8.0, 8.0, 8.0, 16.0, 16.0, 16.0)
+        val UPPER_BOTTOM_LEFT_SHAPE: VoxelShape = createCuboidShape(0.0, 8.0, 8.0, 8.0, 16.0, 16.0)
 
-        val LOWER_TOP_RIGHT_SHAPE = createCuboidShape(8.0, 0.0, 0.0, 16.0, 8.0, 8.0)
-        val LOWER_TOP_LEFT_SHAPE = createCuboidShape(0.0, 0.0, 0.0, 8.0, 8.0, 8.0)
-        val LOWER_BOTTOM_RIGHT_SHAPE = createCuboidShape(8.0, 0.0, 8.0, 16.0, 8.0, 16.0)
-        val LOWER_BOTTOM_LEFT_SHAPE = createCuboidShape(0.0, 0.0, 8.0, 8.0, 8.0, 16.0)
+        val LOWER_TOP_RIGHT_SHAPE: VoxelShape = createCuboidShape(8.0, 0.0, 0.0, 16.0, 8.0, 8.0)
+        val LOWER_TOP_LEFT_SHAPE: VoxelShape = createCuboidShape(0.0, 0.0, 0.0, 8.0, 8.0, 8.0)
+        val LOWER_BOTTOM_RIGHT_SHAPE: VoxelShape = createCuboidShape(8.0, 0.0, 8.0, 16.0, 8.0, 16.0)
+        val LOWER_BOTTOM_LEFT_SHAPE: VoxelShape = createCuboidShape(0.0, 0.0, 8.0, 8.0, 8.0, 16.0)
 
         private fun Direction.getOffset() = when (this) {
             Direction.UP -> Vec3d(0.0, -0.25, 0.0)
