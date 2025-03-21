@@ -156,6 +156,18 @@ object VVBlocks {
 //    val POLISHED_DEEPSLATE_PRESSURE_PLATE = createStonePlate(Blocks.POLISHED_DEEPSLATE)
 //    val BLACKSTONE_PRESSURE_PLATE = createStonePlate(Blocks.BLACKSTONE)
 
+
+    // Polished Sandstone
+    val POLISHED_SANDSTONE = register("polished_sandstone", Block(copy(Blocks.CUT_SANDSTONE))).pickaxe()
+    val POLISHED_SANDSTONE_STAIRS = register("polished_sandstone_stairs", POLISHED_SANDSTONE.toStairs()).pickaxe()
+    val POLISHED_SANDSTONE_SLAB = register("polished_sandstone_slab", POLISHED_SANDSTONE.toSlab()).pickaxe()
+    val POLISHED_SANDSTONE_WALL = register("polished_sandstone_wall", POLISHED_SANDSTONE.toWall())
+
+    val POLISHED_RED_SANDSTONE = register("polished_red_sandstone", Block(copy(Blocks.CUT_RED_SANDSTONE))).pickaxe()
+    val POLISHED_RED_SANDSTONE_STAIRS = register("polished_red_sandstone_stairs", POLISHED_RED_SANDSTONE.toStairs()).pickaxe()
+    val POLISHED_RED_SANDSTONE_SLAB = register("polished_red_sandstone_slab", POLISHED_RED_SANDSTONE.toSlab()).pickaxe()
+    val POLISHED_RED_SANDSTONE_WALL = register("polished_red_sandstone_wall", POLISHED_RED_SANDSTONE.toWall())
+
     fun init() = Unit
 
     fun register(id: String, item: Block): Block {

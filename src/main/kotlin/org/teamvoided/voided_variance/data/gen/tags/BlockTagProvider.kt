@@ -37,10 +37,14 @@ class BlockTagProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Pr
         getOrCreateTagBuilder(ConventionalBlockTags.COBBLESTONES)
             .add(VVBlocks.INFESTED_MOSSY_COBBLESTONE, VVBlocks.INFESTED_COBBLED_DEEPSLATE)
 
-        getOrCreateTagBuilder(ConventionalBlockTags.SANDSTONE_STAIRS)
-            .add(VVBlocks.CUT_SANDSTONE_STAIR, VVBlocks.CUT_RED_SANDSTONE_STAIR)
-        getOrCreateTagBuilder(ConventionalBlockTags.UNCOLORED_SANDSTONE_STAIRS).add(VVBlocks.CUT_SANDSTONE_STAIR)
-        getOrCreateTagBuilder(ConventionalBlockTags.RED_SANDSTONE_STAIRS).add(VVBlocks.CUT_RED_SANDSTONE_STAIR)
+        // Sandstone
+        getOrCreateTagBuilder(ConventionalBlockTags.UNCOLORED_SANDSTONE_BLOCKS).add(VVBlocks.POLISHED_SANDSTONE)
+        getOrCreateTagBuilder(ConventionalBlockTags.RED_SANDSTONE_BLOCKS).add(VVBlocks.POLISHED_RED_SANDSTONE)
+
+        getOrCreateTagBuilder(ConventionalBlockTags.UNCOLORED_SANDSTONE_STAIRS)
+            .add(VVBlocks.CUT_SANDSTONE_STAIR, VVBlocks.POLISHED_SANDSTONE_STAIRS)
+        getOrCreateTagBuilder(ConventionalBlockTags.RED_SANDSTONE_STAIRS)
+            .add(VVBlocks.CUT_RED_SANDSTONE_STAIR, VVBlocks.POLISHED_RED_SANDSTONE_STAIRS)
     }
 
     private fun mineable() {
