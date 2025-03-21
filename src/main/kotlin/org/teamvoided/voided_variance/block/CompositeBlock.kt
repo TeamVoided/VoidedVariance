@@ -79,8 +79,11 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
         val clickedPos = getCornerPosition(hitResult).add(hitResult.side.getOffset().map { it * -2 })
         val cornerToBeAdded = POS_TO_CORNER[clickedPos] ?: return PASS_TO_DEFAULT
 
-        world.setBlockState(pos, state.with(cornerToBeAdded, true))
-        if (state.get(WATERLOGGED)) world.scheduleFluidTick(pos, state)
+        val newState = state.with(cornerToBeAdded, true)
+        pushEntitiesUpBeforeBlockChange(state, newState, world, pos)
+        world.setBlockState(pos, newState)
+
+        if (newState.get(WATERLOGGED)) world.scheduleFluidTick(pos, newState)
         if (!entity.isCreative) stack.decrement(1)
         world.playBlockSound(pos, SoundEvents.BLOCK_HEAVY_CORE_PLACE, 0.8f, 1.0f)
         return ItemInteractionResult.SUCCESS
