@@ -27,6 +27,7 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
     }
 
     fun RecipeExporter.sandstone() {
+        // Polished Sandstone
         this.stonecutAllFrom(
             listOf(Blocks.SANDSTONE, Blocks.CUT_SANDSTONE),
             VVBlocks.POLISHED_SANDSTONE, VVBlocks.POLISHED_SANDSTONE_STAIRS, VVBlocks.POLISHED_SANDSTONE_WALL
@@ -42,5 +43,15 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
         )
         this.stonecutting(VVBlocks.POLISHED_RED_SANDSTONE_SLAB, 2, Blocks.RED_SANDSTONE, Blocks.CUT_RED_SANDSTONE)
         this.create2x2(VVBlocks.POLISHED_RED_SANDSTONE, Blocks.CUT_RED_SANDSTONE)
+
+        // Rough Sandstone
+        this.stonecutAllFrom(
+            Blocks.SANDSTONE, VVBlocks.ROUGH_SANDSTONE, VVBlocks.ROUGH_SANDSTONE_STAIRS, VVBlocks.ROUGH_SANDSTONE_WALL
+        )
+        this.stonecutting(VVBlocks.ROUGH_SANDSTONE_SLAB, 2, Blocks.SANDSTONE)
+        this.stonecutAllFrom(
+            Blocks.RED_SANDSTONE, VVBlocks.ROUGH_RED_SANDSTONE, VVBlocks.ROUGH_RED_SANDSTONE_STAIRS, VVBlocks.ROUGH_RED_SANDSTONE_WALL
+        )
+        this.stonecutting(VVBlocks.ROUGH_RED_SANDSTONE_SLAB, 2, Blocks.RED_SANDSTONE)
     }
 }

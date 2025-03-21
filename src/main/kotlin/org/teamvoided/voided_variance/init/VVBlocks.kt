@@ -167,6 +167,16 @@ object VVBlocks {
     val POLISHED_RED_SANDSTONE_STAIRS = register("polished_red_sandstone_stairs", POLISHED_RED_SANDSTONE.toStairs()).pickaxe()
     val POLISHED_RED_SANDSTONE_SLAB = register("polished_red_sandstone_slab", POLISHED_RED_SANDSTONE.toSlab()).pickaxe()
     val POLISHED_RED_SANDSTONE_WALL = register("polished_red_sandstone_wall", POLISHED_RED_SANDSTONE.toWall())
+    // Rough Sandstone
+    val ROUGH_SANDSTONE = register("rough_sandstone", Block(copy(Blocks.SANDSTONE))).pickaxe()
+    val ROUGH_SANDSTONE_STAIRS = register("rough_sandstone_stairs", ROUGH_SANDSTONE.toStairs()).pickaxe()
+    val ROUGH_SANDSTONE_SLAB = register("rough_sandstone_slab", ROUGH_SANDSTONE.toSlab()).pickaxe()
+    val ROUGH_SANDSTONE_WALL = register("rough_sandstone_wall", ROUGH_SANDSTONE.toWall())
+
+    val ROUGH_RED_SANDSTONE = register("rough_red_sandstone", Block(copy(Blocks.RED_SANDSTONE))).pickaxe()
+    val ROUGH_RED_SANDSTONE_STAIRS = register("rough_red_sandstone_stairs", ROUGH_RED_SANDSTONE.toStairs()).pickaxe()
+    val ROUGH_RED_SANDSTONE_SLAB = register("rough_red_sandstone_slab", ROUGH_RED_SANDSTONE.toSlab()).pickaxe()
+    val ROUGH_RED_SANDSTONE_WALL = register("rough_red_sandstone_wall", ROUGH_RED_SANDSTONE.toWall())
 
     fun init() = Unit
 
