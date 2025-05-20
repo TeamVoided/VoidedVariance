@@ -1,8 +1,8 @@
 package org.teamvoided.voided_variance.init
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
-import net.minecraft.block.Block
 import net.minecraft.block.Blocks
+import net.minecraft.item.ItemConvertible
 import net.minecraft.item.ItemGroup
 import net.minecraft.item.ItemGroups
 import net.minecraft.registry.Holder
@@ -15,13 +15,18 @@ import org.teamvoided.voided_variance.utils.datagen.STAIRS
 import org.teamvoided.voided_variance.utils.datagen.WALLS
 
 object VVTabs {
-    val VOIDED_VARIANCE = register("voided_variance",
+    val VOIDED_VARIANCE = register(
+        "voided_variance",
         FabricItemGroup.builder()
             .icon { VVBlocks.REDSTONE_LANTERN.asItem().defaultStack }
             .name(Text.translatable("itemGroup.voided_variance.voided_variance"))
-            .entries { _, entries ->
+            .entries { params, entries ->
                 if (isDev()) {
-                    entries.addItems(VVBlocks.BLOCKS.map(Block::asItem))
+                    entries.addItems(VVBlocks.BLOCKS.map(ItemConvertible::asItem))
+                    entries.addItem(VVItems.TINTED_GLASS_BOTTLE)
+                    entries.generatePotionEntries(params, VVItems.TINTED_POTION)
+                    entries.generatePotionEntries(params, VVItems.TINTED_SPLASH_POTION)
+                    entries.generatePotionEntries(params, VVItems.TINTED_LINGERING_POTION)
                     return@entries
                 }
                 entries.addItem(
@@ -38,6 +43,10 @@ object VVTabs {
                     VVBlocks.REDSTONE_LANTERN,
                 )
                 entries.addLists(STAIRS, SLABS, WALLS)
+                entries.addItem(VVItems.TINTED_GLASS_BOTTLE)
+                entries.generatePotionEntries(params, VVItems.TINTED_POTION)
+                entries.generatePotionEntries(params, VVItems.TINTED_SPLASH_POTION)
+                entries.generatePotionEntries(params, VVItems.TINTED_LINGERING_POTION)
             }.build()
     )
 
@@ -116,8 +125,14 @@ object VVTabs {
 
             it.addBefore(
                 Blocks.END_STONE,
-                Blocks.OBSIDIAN, VVBlocks.OBSIDIAN_STAIR, VVBlocks.OBSIDIAN_SLAB, VVBlocks.OBSIDIAN_WALL,
-                Blocks.CRYING_OBSIDIAN, VVBlocks.CRYING_OBSIDIAN_STAIRS, VVBlocks.CRYING_OBSIDIAN_SLAB, VVBlocks.CRYING_OBSIDIAN_WALL
+                Blocks.OBSIDIAN,
+                VVBlocks.OBSIDIAN_STAIR,
+                VVBlocks.OBSIDIAN_SLAB,
+                VVBlocks.OBSIDIAN_WALL,
+                Blocks.CRYING_OBSIDIAN,
+                VVBlocks.CRYING_OBSIDIAN_STAIRS,
+                VVBlocks.CRYING_OBSIDIAN_SLAB,
+                VVBlocks.CRYING_OBSIDIAN_WALL
             )
             it.addAfter(
                 Blocks.END_STONE,
@@ -155,5 +170,4 @@ object VVTabs {
     private fun register(name: String, itemGroup: ItemGroup): Holder.Reference<ItemGroup> {
         return Registries.ITEM_GROUP.registerHolder(id(name), itemGroup)
     }
-
 }

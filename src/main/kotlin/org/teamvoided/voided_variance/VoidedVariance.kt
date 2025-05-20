@@ -3,6 +3,7 @@ package org.teamvoided.voided_variance
 import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.teamvoided.voided_variance.init.FabricEvents
 import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.init.VVItems
 import org.teamvoided.voided_variance.init.VVTabs
@@ -19,6 +20,7 @@ object VoidedVariance {
         VVItems.init()
         VVBlocks.init()
         VVTabs.init()
+        FabricEvents.init()
     }
 
     fun id(path: String): Identifier = Identifier.of(MODID, path)

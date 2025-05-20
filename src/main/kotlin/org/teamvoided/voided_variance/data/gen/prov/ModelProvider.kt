@@ -16,6 +16,7 @@ import org.teamvoided.voided_variance.block.VSlabBlock
 import org.teamvoided.voided_variance.block.VStairsBlock
 import org.teamvoided.voided_variance.block.VWallBlock
 import org.teamvoided.voided_variance.init.VVBlocks
+import org.teamvoided.voided_variance.init.VVItems
 import org.teamvoided.voided_variance.utils.datagen.*
 
 class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
@@ -75,7 +76,9 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         gen.denseCube(VVBlocks.HEAVY_CUBE)
     }
 
-    override fun generateItemModels(gen: ItemModelGenerator) = Unit
+    override fun generateItemModels(gen: ItemModelGenerator) {
+        gen.register(VVItems.TINTED_GLASS_BOTTLE, Models.SINGLE_LAYER_ITEM);
+    }
 
     private fun BlockStateModelGenerator.redstoneLantern(block: Block) {
         this.registerItemModel(block.asItem())
@@ -122,7 +125,7 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
     }
 
     fun <T : Comparable<T>> MultipartBlockStateSupplier.with(
-        property: Property<T>, value: T, vararg variants: BlockStateVariant
+        property: Property<T>, value: T, vararg variants: BlockStateVariant,
     ) = this.with(When.create().set(property, value), *variants)
 
     fun variant(model: Identifier) = BlockStateVariant().put(VariantSettings.MODEL, model)

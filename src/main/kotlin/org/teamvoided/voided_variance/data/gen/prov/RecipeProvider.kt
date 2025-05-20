@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider
 import net.minecraft.block.Blocks
 import net.minecraft.data.server.recipe.CookingRecipeJsonFactory
 import net.minecraft.data.server.recipe.RecipeExporter
+import net.minecraft.data.server.recipe.ShapedRecipeJsonFactory
 import net.minecraft.item.Items
 import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.RecipeCategory
@@ -13,6 +14,7 @@ import org.teamvoided.voided_variance.block.VSlabBlock
 import org.teamvoided.voided_variance.block.VStairsBlock
 import org.teamvoided.voided_variance.block.VWallBlock
 import org.teamvoided.voided_variance.init.VVBlocks
+import org.teamvoided.voided_variance.init.VVItems
 import org.teamvoided.voided_variance.utils.datagen.*
 import java.util.concurrent.CompletableFuture
 
@@ -31,6 +33,13 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
         CookingRecipeJsonFactory.createSmelting(
             Ingredient.ofItems(Blocks.LAPIS_BLOCK), RecipeCategory.BUILDING_BLOCKS, VVBlocks.SMOOTH_LAPIS, 0.1f, 200
         ).criterion("has_lapis_block", conditionsFromItem(Blocks.LAPIS_BLOCK)).offerTo(e)
+
+        ShapedRecipeJsonFactory.create(RecipeCategory.BREWING, VVItems.TINTED_GLASS_BOTTLE, 3)
+            .pattern("# #")
+            .pattern(" # ")
+            .ingredient('#', Blocks.TINTED_GLASS)
+            .criterion(Blocks.TINTED_GLASS)
+            .offerTo(e);
     }
 
     fun RecipeExporter.sandstone() {
