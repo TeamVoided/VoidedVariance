@@ -3,8 +3,11 @@ package org.teamvoided.voided_variance.data.gen.prov
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider
 import net.minecraft.block.Blocks
+import net.minecraft.data.server.recipe.CookingRecipeJsonFactory
 import net.minecraft.data.server.recipe.RecipeExporter
 import net.minecraft.item.Items
+import net.minecraft.recipe.Ingredient
+import net.minecraft.recipe.RecipeCategory
 import net.minecraft.registry.HolderLookup
 import org.teamvoided.voided_variance.block.VSlabBlock
 import org.teamvoided.voided_variance.block.VStairsBlock
@@ -24,6 +27,10 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
 
         e.compositeBlock(VVBlocks.HEAVY_CUBE, Items.HEAVY_CORE)
         e.sandstone()
+
+        CookingRecipeJsonFactory.createSmelting(
+            Ingredient.ofItems(Blocks.LAPIS_BLOCK), RecipeCategory.BUILDING_BLOCKS, VVBlocks.SMOOTH_LAPIS, 0.1f, 200
+        ).criterion("has_lapis_block", conditionsFromItem(Blocks.LAPIS_BLOCK)).offerTo(e)
     }
 
     fun RecipeExporter.sandstone() {
@@ -50,7 +57,10 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
         )
         this.stonecutting(VVBlocks.ROUGH_SANDSTONE_SLAB, 2, Blocks.SANDSTONE)
         this.stonecutAllFrom(
-            Blocks.RED_SANDSTONE, VVBlocks.ROUGH_RED_SANDSTONE, VVBlocks.ROUGH_RED_SANDSTONE_STAIRS, VVBlocks.ROUGH_RED_SANDSTONE_WALL
+            Blocks.RED_SANDSTONE,
+            VVBlocks.ROUGH_RED_SANDSTONE,
+            VVBlocks.ROUGH_RED_SANDSTONE_STAIRS,
+            VVBlocks.ROUGH_RED_SANDSTONE_WALL
         )
         this.stonecutting(VVBlocks.ROUGH_RED_SANDSTONE_SLAB, 2, Blocks.RED_SANDSTONE)
     }

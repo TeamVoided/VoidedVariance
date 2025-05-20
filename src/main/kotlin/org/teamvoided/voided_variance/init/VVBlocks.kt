@@ -178,6 +178,12 @@ object VVBlocks {
     val ROUGH_RED_SANDSTONE_SLAB = register("rough_red_sandstone_slab", ROUGH_RED_SANDSTONE.toSlab()).pickaxe()
     val ROUGH_RED_SANDSTONE_WALL = register("rough_red_sandstone_wall", ROUGH_RED_SANDSTONE.toWall())
 
+    // Smooth Lapis
+    val SMOOTH_LAPIS = register("smooth_lapis", Block(copy(Blocks.LAPIS_BLOCK))).pickaxe()
+    val SMOOTH_LAPIS_STAIRS = register("smooth_lapis_stairs", SMOOTH_LAPIS.toStairs()).pickaxe()
+    val SMOOTH_LAPIS_SLAB = register("smooth_lapis_slab", SMOOTH_LAPIS.toSlab()).pickaxe()
+    val SMOOTH_LAPIS_WALL = register("smooth_lapis_wall", SMOOTH_LAPIS.toWall())
+
     fun init() = Unit
 
     fun register(id: String, item: Block): Block {
