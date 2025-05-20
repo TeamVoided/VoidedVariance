@@ -70,7 +70,7 @@ open class TintedPotionItem(settings: Settings) : PotionItem(settings) {
             if (!player.isInCreativeMode) {
                 if (stack.isEmpty) return getBottle().defaultStack
                 if (!player.giveItemStack(getBottle().defaultStack)) {
-                    player.dropItem(getBottle().defaultStack, false);
+                    player.dropItem(getBottle().defaultStack, false)
                 }
             }
         }

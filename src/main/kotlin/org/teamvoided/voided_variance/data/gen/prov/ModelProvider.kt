@@ -77,7 +77,7 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
     }
 
     override fun generateItemModels(gen: ItemModelGenerator) {
-        gen.register(VVItems.TINTED_GLASS_BOTTLE, Models.SINGLE_LAYER_ITEM);
+        gen.register(VVItems.TINTED_GLASS_BOTTLE, Models.SINGLE_LAYER_ITEM)
     }
 
     private fun BlockStateModelGenerator.redstoneLantern(block: Block) {

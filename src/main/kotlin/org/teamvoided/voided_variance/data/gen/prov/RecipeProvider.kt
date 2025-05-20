@@ -39,7 +39,7 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
             .pattern(" # ")
             .ingredient('#', Blocks.TINTED_GLASS)
             .criterion(Blocks.TINTED_GLASS)
-            .offerTo(e);
+            .offerTo(e)
     }
 
     fun RecipeExporter.sandstone() {
