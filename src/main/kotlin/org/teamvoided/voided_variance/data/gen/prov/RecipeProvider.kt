@@ -3,13 +3,18 @@ package org.teamvoided.voided_variance.data.gen.prov
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider
 import net.minecraft.block.Blocks
+import net.minecraft.block.Blocks.BOOKSHELF
 import net.minecraft.data.server.recipe.CookingRecipeJsonFactory
 import net.minecraft.data.server.recipe.RecipeExporter
+import net.minecraft.data.server.recipe.RecipeJsonFactory
 import net.minecraft.data.server.recipe.ShapedRecipeJsonFactory
+import net.minecraft.item.ItemConvertible
 import net.minecraft.item.Items
 import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.RecipeCategory
 import net.minecraft.registry.HolderLookup
+import net.minecraft.util.Identifier
+import org.teamvoided.voided_variance.VoidedVariance.mc
 import org.teamvoided.voided_variance.block.VSlabBlock
 import org.teamvoided.voided_variance.block.VStairsBlock
 import org.teamvoided.voided_variance.block.VWallBlock
@@ -29,6 +34,7 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
 
         e.compositeBlock(VVBlocks.HEAVY_CUBE, Items.HEAVY_CORE)
         e.sandstone()
+        e.bookshelf()
 
         CookingRecipeJsonFactory.createSmelting(
             Ingredient.ofItems(Blocks.LAPIS_BLOCK), RecipeCategory.BUILDING_BLOCKS, VVBlocks.SMOOTH_LAPIS, 0.1f, 200
@@ -72,5 +78,32 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
             VVBlocks.ROUGH_RED_SANDSTONE_WALL
         )
         this.stonecutting(VVBlocks.ROUGH_RED_SANDSTONE_SLAB, 2, Blocks.RED_SANDSTONE)
+    }
+
+    fun RecipeExporter.bookshelf() {
+        this.bookshelf(BOOKSHELF, Blocks.OAK_PLANKS, mc("oak_bookshelf"))
+        this.bookshelf(VVBlocks.SPRUCE_BOOKSHELF, Blocks.SPRUCE_PLANKS)
+        this.bookshelf(VVBlocks.BIRCH_BOOKSHELF, Blocks.BIRCH_PLANKS)
+        this.bookshelf(VVBlocks.JUNGLE_BOOKSHELF, Blocks.JUNGLE_PLANKS)
+        this.bookshelf(VVBlocks.ACACIA_BOOKSHELF, Blocks.ACACIA_PLANKS)
+        this.bookshelf(VVBlocks.DARK_OAK_BOOKSHELF, Blocks.DARK_OAK_PLANKS)
+        this.bookshelf(VVBlocks.MANGROVE_BOOKSHELF, Blocks.MANGROVE_PLANKS)
+        this.bookshelf(VVBlocks.CHERRY_BOOKSHELF, Blocks.CHERRY_PLANKS)
+        this.bookshelf(VVBlocks.BAMBOO_BOOKSHELF, Blocks.BAMBOO_PLANKS)
+        this.bookshelf(VVBlocks.CRIMSON_BOOKSHELF, Blocks.CRIMSON_PLANKS)
+        this.bookshelf(VVBlocks.WARPED_BOOKSHELF, Blocks.WARPED_PLANKS)
+    }
+
+    fun RecipeExporter.bookshelf(
+        bookshelf: ItemConvertible, planks: ItemConvertible, id: Identifier = RecipeJsonFactory.getItemId(bookshelf),
+    ) {
+        ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, bookshelf)
+            .pattern("###")
+            .pattern("XXX")
+            .pattern("###")
+            .ingredient('#', planks)
+            .ingredient('X', Items.BOOK)
+            .criterion(Items.BOOK)
+            .offerTo(this, id)
     }
 }

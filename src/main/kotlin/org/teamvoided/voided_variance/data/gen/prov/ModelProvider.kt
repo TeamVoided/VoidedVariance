@@ -17,6 +17,7 @@ import org.teamvoided.voided_variance.block.VStairsBlock
 import org.teamvoided.voided_variance.block.VWallBlock
 import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.init.VVItems
+import org.teamvoided.voided_variance.utils.BOOKSHELFS
 import org.teamvoided.voided_variance.utils.datagen.*
 
 class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
@@ -37,7 +38,7 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         VVBlocks.QUARTZ_WALL,
 
         VVBlocks.HEAVY_CUBE
-    )
+    ) + BOOKSHELFS
 
     override fun generateBlockStateModels(gen: BlockStateModelGenerator) {
         blocks@ for (block in VVBlocks.BLOCKS) {
@@ -74,6 +75,17 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
 
         gen.addAxis(Blocks.MANGROVE_ROOTS)
         gen.denseCube(VVBlocks.HEAVY_CUBE)
+
+        gen.bookshelf(VVBlocks.SPRUCE_BOOKSHELF, Blocks.SPRUCE_PLANKS)
+        gen.bookshelf(VVBlocks.BIRCH_BOOKSHELF, Blocks.BIRCH_PLANKS)
+        gen.bookshelf(VVBlocks.JUNGLE_BOOKSHELF, Blocks.JUNGLE_PLANKS)
+        gen.bookshelf(VVBlocks.ACACIA_BOOKSHELF, Blocks.ACACIA_PLANKS)
+        gen.bookshelf(VVBlocks.DARK_OAK_BOOKSHELF, Blocks.DARK_OAK_PLANKS)
+        gen.bookshelf(VVBlocks.MANGROVE_BOOKSHELF, Blocks.MANGROVE_PLANKS)
+        gen.bookshelf(VVBlocks.CHERRY_BOOKSHELF, Blocks.CHERRY_PLANKS)
+        gen.bookshelf(VVBlocks.BAMBOO_BOOKSHELF, Blocks.BAMBOO_PLANKS)
+        gen.bookshelf(VVBlocks.CRIMSON_BOOKSHELF, Blocks.CRIMSON_PLANKS)
+        gen.bookshelf(VVBlocks.WARPED_BOOKSHELF, Blocks.WARPED_PLANKS)
     }
 
     override fun generateItemModels(gen: ItemModelGenerator) {
@@ -105,6 +117,12 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
     private fun BlockStateModelGenerator.addAxis(block: Block) = this.blockStateCollector.accept(
         BlockStateModelGenerator.createAxisRotatedBlockState(block, ModelIds.getBlockModelId(block))
     )
+
+    private fun BlockStateModelGenerator.bookshelf(bookshelf: Block, top: Block) {
+        val texture = Texture.sideEnd(Texture.getId(bookshelf), Texture.getId(top))
+        val model = Models.CUBE_COLUMN.upload(bookshelf, texture, this.modelCollector)
+        this.blockStateCollector.accept(BlockStateModelGenerator.createSingletonBlockState(bookshelf, model))
+    }
 
     private fun BlockStateModelGenerator.denseCube(block: Block) {
         val topModel = ModelIds.getBlockSubModelId(block, "_top")

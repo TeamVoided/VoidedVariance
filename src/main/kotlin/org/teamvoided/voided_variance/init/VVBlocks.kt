@@ -1,5 +1,7 @@
 package org.teamvoided.voided_variance.init
 
+import net.fabricmc.fabric.api.registry.FlammableBlockRegistry
+import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.minecraft.block.*
 import net.minecraft.block.AbstractBlock.Settings.copy
 import net.minecraft.block.Blocks.luminanceOf
@@ -7,6 +9,8 @@ import net.minecraft.registry.Registries
 import net.minecraft.sound.BlockSoundGroup
 import org.teamvoided.voided_variance.VoidedVariance.id
 import org.teamvoided.voided_variance.block.*
+import org.teamvoided.voided_variance.utils.BOOKSHELFS
+import org.teamvoided.voided_variance.utils.bookshelf
 import org.teamvoided.voided_variance.utils.datagen.*
 import org.teamvoided.voided_variance.utils.register
 
@@ -164,9 +168,11 @@ object VVBlocks {
     val POLISHED_SANDSTONE_WALL = register("polished_sandstone_wall", POLISHED_SANDSTONE.toWall())
 
     val POLISHED_RED_SANDSTONE = register("polished_red_sandstone", Block(copy(Blocks.CUT_RED_SANDSTONE))).pickaxe()
-    val POLISHED_RED_SANDSTONE_STAIRS = register("polished_red_sandstone_stairs", POLISHED_RED_SANDSTONE.toStairs()).pickaxe()
+    val POLISHED_RED_SANDSTONE_STAIRS =
+        register("polished_red_sandstone_stairs", POLISHED_RED_SANDSTONE.toStairs()).pickaxe()
     val POLISHED_RED_SANDSTONE_SLAB = register("polished_red_sandstone_slab", POLISHED_RED_SANDSTONE.toSlab()).pickaxe()
     val POLISHED_RED_SANDSTONE_WALL = register("polished_red_sandstone_wall", POLISHED_RED_SANDSTONE.toWall())
+
     // Rough Sandstone
     val ROUGH_SANDSTONE = register("rough_sandstone", Block(copy(Blocks.SANDSTONE))).pickaxe()
     val ROUGH_SANDSTONE_STAIRS = register("rough_sandstone_stairs", ROUGH_SANDSTONE.toStairs()).pickaxe()
@@ -184,7 +190,24 @@ object VVBlocks {
     val SMOOTH_LAPIS_SLAB = register("smooth_lapis_slab", SMOOTH_LAPIS.toSlab()).pickaxe()
     val SMOOTH_LAPIS_WALL = register("smooth_lapis_wall", SMOOTH_LAPIS.toWall())
 
-    fun init() = Unit
+    val SPRUCE_BOOKSHELF = register("spruce_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val BIRCH_BOOKSHELF = register("birch_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val JUNGLE_BOOKSHELF = register("jungle_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val ACACIA_BOOKSHELF = register("acacia_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val DARK_OAK_BOOKSHELF = register("dark_oak_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val MANGROVE_BOOKSHELF = register("mangrove_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val CHERRY_BOOKSHELF = register("cherry_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val BAMBOO_BOOKSHELF = register("bamboo_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val CRIMSON_BOOKSHELF = register("crimson_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val WARPED_BOOKSHELF = register("warped_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+
+
+    fun init() {
+        BOOKSHELFS.onEach {
+            FlammableBlockRegistry.getDefaultInstance().add(it, 30, 20)
+            FuelRegistry.INSTANCE.add(it, 300)
+        }
+    }
 
     fun register(id: String, item: Block): Block {
         val holder = registerNoItem(id, item)
