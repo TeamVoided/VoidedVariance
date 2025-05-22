@@ -71,7 +71,7 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
 
     override fun onInteract(
         stack: ItemStack, state: BlockState, world: World,
-        pos: BlockPos, entity: PlayerEntity, hand: Hand, hitResult: BlockHitResult
+        pos: BlockPos, entity: PlayerEntity, hand: Hand, hitResult: BlockHitResult,
     ): ItemInteractionResult {
         if (hitResult.type != HitResult.Type.BLOCK || !stack.isOf(Items.HEAVY_CORE) || state.isFull())
             return super.onInteract(stack, state, world, pos, entity, hand, hitResult)
@@ -79,13 +79,7 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
         val clickedPos = getCornerPosition(hitResult).add(hitResult.side.getOffset().map { it * -2 })
         val cornerToBeAdded = POS_TO_CORNER[clickedPos] ?: return PASS_TO_DEFAULT
 
-        val newState = state.with(cornerToBeAdded, true)
-        pushEntitiesUpBeforeBlockChange(state, newState, world, pos)
-        world.setBlockState(pos, newState)
-
-        if (newState.get(WATERLOGGED)) world.scheduleFluidTick(pos, newState)
-        if (!entity.isCreative) stack.decrement(1)
-        world.playBlockSound(pos, SoundEvents.BLOCK_HEAVY_CORE_PLACE, 0.8f, 1.0f)
+        addToComposite(state, cornerToBeAdded, world, pos, entity, stack)
         return ItemInteractionResult.SUCCESS
     }
 
@@ -153,6 +147,20 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
                 .map { if (it < 0) 1 + it else it }
                 .map { if (it < .5) .25 else .75 }
 
+
+        fun addToComposite(
+            state: BlockState, cornerToBeAdded: BooleanProperty, world: World,
+            pos: BlockPos, entity: PlayerEntity, stack: ItemStack,
+        ) {
+            val newState = state.with(cornerToBeAdded, true)
+            pushEntitiesUpBeforeBlockChange(state, newState, world, pos)
+            world.setBlockState(pos, newState)
+
+            if (newState.get(WATERLOGGED)) world.scheduleFluidTick(pos, newState)
+            if (!entity.isCreative) stack.decrement(1)
+            world.playBlockSound(pos, SoundEvents.BLOCK_HEAVY_CORE_PLACE, 0.8f, 1.0f)
+        }
+
         fun BlockState.hasAnyCorners(): Boolean =
             this.get(UPPER_NORTH_EAST) || this.get(UPPER_NORTH_WEST)
                     || this.get(UPPER_SOUTH_EAST) || this.get(UPPER_SOUTH_WEST)
@@ -193,7 +201,7 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
         val LOWER_BOTTOM_RIGHT_SHAPE: VoxelShape = createCuboidShape(8.0, 0.0, 8.0, 16.0, 8.0, 16.0)
         val LOWER_BOTTOM_LEFT_SHAPE: VoxelShape = createCuboidShape(0.0, 0.0, 8.0, 8.0, 8.0, 16.0)
 
-        private fun Direction.getOffset() = when (this) {
+        fun Direction.getOffset() = when (this) {
             Direction.UP -> Vec3d(0.0, -0.25, 0.0)
             Direction.DOWN -> Vec3d(0.0, 0.25, 0.0)
             Direction.NORTH -> Vec3d(0.0, 0.0, 0.25)
@@ -202,7 +210,7 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
             Direction.EAST -> Vec3d(-0.25, 0.0, 0.0)
         }
 
-        private val POS_TO_CORNER = mapOf(
+        val POS_TO_CORNER = mapOf(
             Vec3d(0.25, 0.25, 0.25) to LOWER_NORTH_WEST,
             Vec3d(0.75, 0.25, 0.25) to LOWER_NORTH_EAST,
 
