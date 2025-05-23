@@ -2,9 +2,7 @@ package org.teamvoided.voided_variance.init
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.minecraft.block.Blocks
-import net.minecraft.item.ItemConvertible
-import net.minecraft.item.ItemGroup
-import net.minecraft.item.ItemGroups
+import net.minecraft.item.*
 import net.minecraft.registry.Holder
 import net.minecraft.registry.Registries
 import net.minecraft.text.Text
@@ -21,14 +19,6 @@ object VVTabs {
             .icon { VVBlocks.REDSTONE_LANTERN.asItem().defaultStack }
             .name(Text.translatable("itemGroup.voided_variance.voided_variance"))
             .entries { params, entries ->
-                if (isDev()) {
-                    entries.addItems(VVBlocks.BLOCKS.map(ItemConvertible::asItem))
-                    entries.addItem(VVItems.TINTED_GLASS_BOTTLE)
-                    entries.generatePotionEntries(params, VVItems.TINTED_POTION)
-                    entries.generatePotionEntries(params, VVItems.TINTED_SPLASH_POTION)
-                    entries.generatePotionEntries(params, VVItems.TINTED_LINGERING_POTION)
-                    return@entries
-                }
                 entries.addItem(
                     VVBlocks.BRICK_FENCE,
 
@@ -51,10 +41,31 @@ object VVTabs {
     )
 
     fun init() {
+        if (isDev()) register(
+            "vv_debug", FabricItemGroup.builder()
+                .icon { Items.BARRIER.defaultStack }
+                .name(Text.translatable("VV Debug"))
+                .entries { params, entries ->
+                    VVItems.ITEMS.map {
+                        when (it) {
+                            is PotionItem -> entries.generatePotionEntries(params, it)
+                            else -> entries.addItem(it)
+                        }
+                    }
+                    return@entries
+                }.build()
+        )
+
         addToTab(ItemGroups.BUILDING_BLOCKS) {
             it.addAfter(Blocks.BRICK_WALL, VVBlocks.BRICK_FENCE)
 
-            it.addBefore(Blocks.STONE, Blocks.SNOW_BLOCK, VVBlocks.SNOW_STAIR, VVBlocks.SNOW_SLAB, VVBlocks.SNOW_WALL)
+            it.addBefore(
+                Blocks.STONE,
+                Blocks.SNOW_BLOCK,
+                VVBlocks.SNOW_STAIR,
+                VVBlocks.SNOW_SLAB,
+                VVBlocks.SNOW_WALL
+            )
 
             it.addAfter(Blocks.STONE_SLAB, VVBlocks.STONE_WALL)
 
@@ -71,10 +82,17 @@ object VVTabs {
             it.addAfter(Blocks.POLISHED_GRANITE_SLAB, VVBlocks.POLISHED_GRANITE_WALL)
             it.addAfter(Blocks.POLISHED_DIORITE_SLAB, VVBlocks.POLISHED_DIORITE_WALL)
             it.addAfter(
-                Blocks.POLISHED_ANDESITE_SLAB, VVBlocks.POLISHED_ANDESITE_WALL,
+                Blocks.POLISHED_ANDESITE_SLAB,
+                VVBlocks.POLISHED_ANDESITE_WALL,
                 // More rocks
-                Blocks.DRIPSTONE_BLOCK, VVBlocks.DRIPSTONE_STAIR, VVBlocks.DRIPSTONE_SLAB, VVBlocks.DRIPSTONE_WALL,
-                Blocks.CALCITE, VVBlocks.CALCITE_STAIR, VVBlocks.CALCITE_SLAB, VVBlocks.CALCITE_WALL
+                Blocks.DRIPSTONE_BLOCK,
+                VVBlocks.DRIPSTONE_STAIR,
+                VVBlocks.DRIPSTONE_SLAB,
+                VVBlocks.DRIPSTONE_WALL,
+                Blocks.CALCITE,
+                VVBlocks.CALCITE_STAIR,
+                VVBlocks.CALCITE_SLAB,
+                VVBlocks.CALCITE_WALL
             )
 
             it.addAfter(
@@ -91,7 +109,10 @@ object VVTabs {
             )
 
             it.addAfter(
-                Blocks.PACKED_MUD, VVBlocks.PACKED_MUD_STAIR, VVBlocks.PACKED_MUD_SLAB, VVBlocks.PACKED_MUD_WALL
+                Blocks.PACKED_MUD,
+                VVBlocks.PACKED_MUD_STAIR,
+                VVBlocks.PACKED_MUD_SLAB,
+                VVBlocks.PACKED_MUD_WALL
             )
 
             it.addAfter(Blocks.SMOOTH_SANDSTONE_SLAB, VVBlocks.SMOOTH_SANDSTONE_WALL)

@@ -35,7 +35,7 @@ object VVItems {
         return holder
     }
 
-    fun potionSetting() =
+    fun potionSetting(): Item.Settings =
         Item.Settings().maxCount(1).component(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT)
 
     fun registerBlockItem(id: String, block: Block) = register(id, BlockItem(block, Item.Settings()))
