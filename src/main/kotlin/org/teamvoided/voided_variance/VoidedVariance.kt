@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 import org.teamvoided.voided_variance.init.FabricEvents
 import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.init.VVItems
+import org.teamvoided.voided_variance.init.VVRecipeTypes
 import org.teamvoided.voided_variance.init.VVTabs
 
 @Suppress("unused")
@@ -20,6 +21,7 @@ object VoidedVariance {
         VVItems.init()
         VVBlocks.init()
         VVTabs.init()
+        VVRecipeTypes.init()
         FabricEvents.init()
     }
 
