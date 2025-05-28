@@ -1,12 +1,15 @@
 package org.teamvoided.voided_variance.recipe
 
 import com.google.common.annotations.VisibleForTesting
+import com.mojang.datafixers.util.Pair
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
+import com.mojang.serialization.DynamicOps
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import it.unimi.dsi.fastutil.chars.CharArraySet
 import it.unimi.dsi.fastutil.chars.CharSet
+import net.minecraft.item.ItemStack
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.codec.ValueFirstEncoder
@@ -23,7 +26,8 @@ import kotlin.math.min
 class StrictShapedRecipePattern(
     val width: Int, val height: Int,
     val ingredients: DefaultedList<Ingredient>,
-    private val data: Optional<Data>,
+    val groups: DefaultedList<Char>,
+    private val data: Optional<ShapeData>,
 ) {
     private val ingredientCount: Int
     private val symmetric: Boolean
@@ -60,6 +64,7 @@ class StrictShapedRecipePattern(
     }
 
     private fun matches(input: CraftingRecipeInput, mirror: Boolean): Boolean {
+        val groups = mutableMapOf<Char, List<ItemStack>>()
         for (i in 0..<this.height) {
             for (j in 0..<this.width) {
                 val ingredient: Ingredient =
@@ -70,28 +75,42 @@ class StrictShapedRecipePattern(
                 if (!ingredient.test(itemStack)) {
                     return false
                 }
+                val group: Char =
+                    if (mirror) this.groups[this.width - j - 1 + i * this.width]
+                    else this.groups[j + i * this.width]
+                if (group != EMPTY_CHAR) {
+                    groups[group] = (groups[group] ?: listOf()) + listOf(itemStack)
+                }
             }
         }
-        val stacks = input.stacks.filter { !it.isEmpty }
-        for (stack in stacks) {
-            if (!stack.isOf(stacks[0].item)) {
-                return true
+        for ((_, stacks) in groups) {
+            if (stacks.size <= 1) continue
+            var uniform = true
+            for (stack in stacks) {
+                if (!stack.isOf(stacks[0].item)) {
+                    uniform = false
+                    break
+                }
             }
+            if (uniform) return false
         }
-        return false
+
+        return true
     }
 
     private fun toBuf(buf: RegistryByteBuf) {
         buf.writeVarInt(this.width)
         buf.writeVarInt(this.height)
-
+        for (group in this.groups) {
+            buf.writeChar(group?.code ?: EMPTY_CHAR.code)
+        }
         for (ingredient in this.ingredients) {
             Ingredient.PACKET_CODEC.encode(buf, ingredient)
         }
     }
 
     @JvmRecord
-    data class Data(val key: MutableMap<Char, Ingredient>, val pattern: MutableList<String>) {
+    data class ShapeData(val key: MutableMap<Char, Pair<Boolean, Ingredient>>, val pattern: MutableList<String>) {
         companion object {
             private val PATTERN_CODEC: Codec<MutableList<String>> = Codec.STRING.listOf()
                 .comapFlatMap(
@@ -123,19 +142,58 @@ class StrictShapedRecipePattern(
                     else DataResult.success<Char>(symbol[0])
                 }
             }, { it.toString() })
-            val CODEC: MapCodec<Data> = RecordCodecBuilder.mapCodec { instance ->
+
+            val INTERNAL_PAIR_CODEC = Codec.pair(
+                Codec.BOOL.fieldOf("strict").codec(),
+                Ingredient.DISALLOW_EMPTY_CODEC.fieldOf("ingredient").codec()
+            )
+            val PAIR_CODEC: Codec<Pair<Boolean, Ingredient>> = object : Codec<Pair<Boolean, Ingredient>> {
+                override fun <T : Any> encode(
+                    input: Pair<Boolean, Ingredient>,
+                    ops: DynamicOps<T>,
+                    prefix: T,
+                ): DataResult<T> {
+                    return if (input.first) {
+                        INTERNAL_PAIR_CODEC.encode(input, ops, prefix)
+                    } else {
+                        val result = Ingredient.DISALLOW_EMPTY_CODEC.encode(input.second, ops, prefix)
+                        if (result.isSuccess) result
+                        else result.error().get()
+                    }
+                }
+
+                override fun <T : Any> decode(
+                    ops: DynamicOps<T>,
+                    input: T,
+                ): DataResult<Pair<Pair<Boolean, Ingredient>, T>> {
+                    return if (ops.get(input, "strict").isSuccess) {
+                        INTERNAL_PAIR_CODEC.decode(ops, input)
+                    } else {
+                        val result = Ingredient.DISALLOW_EMPTY_CODEC.decode(ops, input)
+                        if (result.isSuccess)
+                            DataResult.success(Pair.of(Pair.of(false, result.result().get().first), input))
+                        else
+                            DataResult.error { result.error().get().message() }
+                    }
+                }
+            }
+
+
+            val CODEC: MapCodec<ShapeData> = RecordCodecBuilder.mapCodec { instance ->
                 instance.group(
-                    Codecs.createStrictUnboundedMap(KEY_SYMBOL_CODEC, Ingredient.DISALLOW_EMPTY_CODEC)
-                        .fieldOf("key").forGetter { it.key },
-                    PATTERN_CODEC.fieldOf("pattern").forGetter<Data> { it.pattern }
-                ).apply(instance, ::Data)
+                    Codecs.createStrictUnboundedMap(
+                        KEY_SYMBOL_CODEC, PAIR_CODEC
+                    ).fieldOf("key").forGetter { it.key },
+                    PATTERN_CODEC.fieldOf("pattern").forGetter<ShapeData> { it.pattern }
+                ).apply(instance, ::ShapeData)
             }
         }
     }
 
     companion object {
         private const val MAX_WIDTH_AND_HEIGHT = 3
-        val CODEC: MapCodec<StrictShapedRecipePattern> = Data.Companion.CODEC.flatXmap(::fromData) { pattern ->
+        const val EMPTY_CHAR = ' '
+        val CODEC: MapCodec<StrictShapedRecipePattern> = ShapeData.Companion.CODEC.flatXmap(::fromData) { pattern ->
             pattern.data
                 .map { DataResult.success(it) }
                 .orElseGet { DataResult.error { "Cannot encode unpacked recipe" } }
@@ -145,16 +203,17 @@ class StrictShapedRecipePattern(
                 ValueFirstEncoder { obj, buf -> obj.toBuf(buf) }, ::fromBuf
             )
 
-        fun of(key: MutableMap<Char, Ingredient>, vararg pattern: String): StrictShapedRecipePattern {
-            val data = Data(key, pattern.toMutableList())
+        fun of(key: MutableMap<Char, Pair<Boolean, Ingredient>>, vararg pattern: String): StrictShapedRecipePattern {
+            val data = ShapeData(key, pattern.toMutableList())
             return fromData(data).getOrThrow()
         }
 
-        private fun fromData(data: Data): DataResult<StrictShapedRecipePattern> {
+        private fun fromData(data: ShapeData): DataResult<StrictShapedRecipePattern> {
             val strings = trim(data.pattern)
             val i = strings.getOrNull(0)?.length ?: 0
             val j = strings.size
             val defaultedList = DefaultedList.ofSize(i * j, Ingredient.EMPTY)
+            val groupList: DefaultedList<Char> = DefaultedList.ofSize(i * j, EMPTY_CHAR)
             val charSet: CharSet = CharArraySet(data.key.keys)
 
             for (k in strings.indices) {
@@ -162,27 +221,23 @@ class StrictShapedRecipePattern(
 
                 for (l in 0..<string.length) {
                     val c = string[l]
-                    val ingredient = if (c == ' ') Ingredient.EMPTY else data.key[c]
+                    val ingredient = if (c == EMPTY_CHAR) Ingredient.EMPTY else data.key[c]?.second
                     if (ingredient == null) {
                         return DataResult.error { "Pattern references symbol '$c' but it's not defined in the key" }
                     }
 
                     charSet.remove(c)
                     defaultedList[l + i * k] = ingredient
+                    if (data.key[c]?.first == true) {
+                        groupList[l + i * k] = c
+                    }
                 }
             }
 
             return if (!charSet.isEmpty())
                 DataResult.error { "Key defines symbols that aren't used in pattern: $charSet" }
             else
-                DataResult.success(
-                    StrictShapedRecipePattern(
-                        i,
-                        j,
-                        defaultedList,
-                        Optional.of<Data>(data)
-                    )
-                )
+                DataResult.success(StrictShapedRecipePattern(i, j, defaultedList, groupList, Optional.of(data)))
         }
 
         @VisibleForTesting
@@ -215,7 +270,7 @@ class StrictShapedRecipePattern(
 
         fun findFirstSymbol(row: String): Int {
             var i = 0
-            while (i < row.length && row[i] == ' ') {
+            while (i < row.length && row[i] == EMPTY_CHAR) {
                 i++
             }
             return i
@@ -223,7 +278,7 @@ class StrictShapedRecipePattern(
 
         fun findLastSymbol(row: String): Int {
             var i = row.length - 1
-            while (i >= 0 && row[i] == ' ') {
+            while (i >= 0 && row[i] == EMPTY_CHAR) {
                 i--
             }
             return i
@@ -232,9 +287,13 @@ class StrictShapedRecipePattern(
         private fun fromBuf(buf: RegistryByteBuf): StrictShapedRecipePattern {
             val i = buf.readVarInt()
             val j = buf.readVarInt()
+
+            val groupList: DefaultedList<Char> = DefaultedList.ofSize(i * j, EMPTY_CHAR)
+            groupList.replaceAll { buf.readChar() }
+
             val defaultedList = DefaultedList.ofSize(i * j, Ingredient.EMPTY)
             defaultedList.replaceAll { ingredient: Ingredient -> Ingredient.PACKET_CODEC.decode(buf) }
-            return StrictShapedRecipePattern(i, j, defaultedList, Optional.empty<Data>())
+            return StrictShapedRecipePattern(i, j, defaultedList, groupList, Optional.empty())
         }
     }
 }
