@@ -4,15 +4,13 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider
 import net.minecraft.block.Blocks
 import net.minecraft.block.Blocks.BOOKSHELF
-import net.minecraft.data.server.recipe.CookingRecipeJsonFactory
-import net.minecraft.data.server.recipe.RecipeExporter
-import net.minecraft.data.server.recipe.RecipeJsonFactory
-import net.minecraft.data.server.recipe.ShapedRecipeJsonFactory
+import net.minecraft.data.server.recipe.*
 import net.minecraft.item.ItemConvertible
 import net.minecraft.item.Items
 import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.RecipeCategory
 import net.minecraft.registry.HolderLookup
+import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 import org.teamvoided.voided_variance.VoidedVariance.mc
 import org.teamvoided.voided_variance.block.VSlabBlock
@@ -46,6 +44,24 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
             .ingredient('#', Blocks.TINTED_GLASS)
             .criterion(Blocks.TINTED_GLASS)
             .offerTo(e)
+
+        e.carpetPlate(VVBlocks.WHITE_CARPET_PLATE, Blocks.WHITE_CARPET)
+        e.carpetPlate(VVBlocks.ORANGE_CARPET_PLATE, Blocks.ORANGE_CARPET)
+        e.carpetPlate(VVBlocks.MAGENTA_CARPET_PLATE, Blocks.MAGENTA_CARPET)
+        e.carpetPlate(VVBlocks.LIGHT_BLUE_CARPET_PLATE, Blocks.LIGHT_BLUE_CARPET)
+        e.carpetPlate(VVBlocks.YELLOW_CARPET_PLATE, Blocks.YELLOW_CARPET)
+        e.carpetPlate(VVBlocks.LIME_CARPET_PLATE, Blocks.LIME_CARPET)
+        e.carpetPlate(VVBlocks.PINK_CARPET_PLATE, Blocks.PINK_CARPET)
+        e.carpetPlate(VVBlocks.GRAY_CARPET_PLATE, Blocks.GRAY_CARPET)
+        e.carpetPlate(VVBlocks.LIGHT_GRAY_CARPET_PLATE, Blocks.LIGHT_GRAY_CARPET)
+        e.carpetPlate(VVBlocks.CYAN_CARPET_PLATE, Blocks.CYAN_CARPET)
+        e.carpetPlate(VVBlocks.PURPLE_CARPET_PLATE, Blocks.PURPLE_CARPET)
+        e.carpetPlate(VVBlocks.BLUE_CARPET_PLATE, Blocks.BLUE_CARPET)
+        e.carpetPlate(VVBlocks.BROWN_CARPET_PLATE, Blocks.BROWN_CARPET)
+        e.carpetPlate(VVBlocks.GREEN_CARPET_PLATE, Blocks.GREEN_CARPET)
+        e.carpetPlate(VVBlocks.RED_CARPET_PLATE, Blocks.RED_CARPET)
+        e.carpetPlate(VVBlocks.BLACK_CARPET_PLATE, Blocks.BLACK_CARPET)
+        e.carpetPlate(VVBlocks.MOSS_CARPET_PLATE, Blocks.MOSS_CARPET)
     }
 
     fun RecipeExporter.sandstone() {
@@ -105,5 +121,13 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
             .ingredient('X', Items.BOOK)
             .criterion(Items.BOOK)
             .offerTo(this, id)
+    }
+
+    fun RecipeExporter.carpetPlate(plate: ItemConvertible, carpet: ItemConvertible) {
+        ShapelessRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, plate)
+            .ingredient(ItemTags.WOODEN_PRESSURE_PLATES)
+            .ingredient(carpet)
+            .criterion(ItemTags.WOODEN_PRESSURE_PLATES)
+            .offerTo(this)
     }
 }

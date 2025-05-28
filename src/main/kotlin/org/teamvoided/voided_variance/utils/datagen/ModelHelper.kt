@@ -3,7 +3,6 @@ package org.teamvoided.voided_variance.utils.datagen
 import net.minecraft.block.Block
 import net.minecraft.data.client.model.*
 import net.minecraft.util.Identifier
-import org.teamvoided.voided_variance.VoidedVariance.id
 import java.util.*
 
 
@@ -110,13 +109,5 @@ fun BlockStateModelGenerator.wallOffset(wallBlock: Block, inId: Identifier) {
     this.blockStateCollector.accept(BlockStateModelGenerator.createWallBlockState(wallBlock, id, id2, id3))
     this.registerParentedItemModel(wallBlock, OFFSET_WALL_INVENTORY.upload(wallBlock, texture, this.modelCollector))
 }
-
-val OFFSET_WALL_POST = block("template/offset/wall_post", "_post", TextureKey.WALL)
-val OFFSET_WALL_SIDE = block("template/offset/wall_side", "_side", TextureKey.WALL)
-val OFFSET_WALL_SIDE_TALL = block("template/offset/wall_side_tall", "_side_tall", TextureKey.WALL)
-val OFFSET_WALL_INVENTORY = block("template/offset/wall_inventory", "_inventory", TextureKey.WALL)
-
-fun block(parent: String, variant: String, vararg requiredTextures: TextureKey): Model =
-    Model(id("block/$parent").myb(), variant.myb(), *requiredTextures)
 
 fun <T : Any> T.myb() = Optional.of(this)

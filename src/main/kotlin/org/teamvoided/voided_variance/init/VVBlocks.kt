@@ -9,6 +9,8 @@ import net.minecraft.registry.Registries
 import net.minecraft.sound.BlockSoundGroup
 import org.teamvoided.voided_variance.VoidedVariance.id
 import org.teamvoided.voided_variance.block.*
+import org.teamvoided.voided_variance.init.VVBlockSetTypes.MOSS
+import org.teamvoided.voided_variance.init.VVBlockSetTypes.WOOL
 import org.teamvoided.voided_variance.utils.BOOKSHELFS
 import org.teamvoided.voided_variance.utils.bookshelf
 import org.teamvoided.voided_variance.utils.datagen.*
@@ -200,6 +202,31 @@ object VVBlocks {
     val BAMBOO_BOOKSHELF = register("bamboo_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
     val CRIMSON_BOOKSHELF = register("crimson_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
     val WARPED_BOOKSHELF = register("warped_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+
+
+    // Carpet Plates
+    val WHITE_CARPET_PLATE = register("white_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.WHITE_CARPET)))
+    val ORANGE_CARPET_PLATE = register("orange_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.ORANGE_CARPET)))
+    val MAGENTA_CARPET_PLATE = register("magenta_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.MAGENTA_CARPET)))
+    val LIGHT_BLUE_CARPET_PLATE =
+        register("light_blue_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.LIGHT_BLUE_CARPET)))
+    val YELLOW_CARPET_PLATE = register("yellow_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.YELLOW_CARPET)))
+    val LIME_CARPET_PLATE = register("lime_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.LIME_CARPET)))
+    val PINK_CARPET_PLATE = register("pink_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.PINK_CARPET)))
+    val GRAY_CARPET_PLATE = register("gray_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.GRAY_CARPET)))
+    val LIGHT_GRAY_CARPET_PLATE =
+        register("light_gray_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.LIGHT_GRAY_CARPET)))
+    val CYAN_CARPET_PLATE = register("cyan_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.CYAN_CARPET)))
+    val PURPLE_CARPET_PLATE = register("purple_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.PURPLE_CARPET)))
+    val BLUE_CARPET_PLATE = register("blue_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.BLUE_CARPET)))
+    val BROWN_CARPET_PLATE = register("brown_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.BROWN_CARPET)))
+    val GREEN_CARPET_PLATE = register("green_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.GREEN_CARPET)))
+    val RED_CARPET_PLATE = register("red_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.RED_CARPET)))
+    val BLACK_CARPET_PLATE = register("black_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.BLACK_CARPET)))
+
+
+
+    val MOSS_CARPET_PLATE = register("moss_carpet_plate", CarpetPlateBlock(MOSS, copy(Blocks.MOSS_CARPET)))
 
 
     fun init() {

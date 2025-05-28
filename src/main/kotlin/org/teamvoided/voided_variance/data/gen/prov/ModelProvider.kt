@@ -7,14 +7,12 @@ import net.minecraft.block.Blocks
 import net.minecraft.block.InfestedBlock
 import net.minecraft.data.client.ItemModelGenerator
 import net.minecraft.data.client.model.*
+import net.minecraft.data.client.model.BlockStateModelGenerator.createSingletonBlockState
 import net.minecraft.state.property.Properties
 import net.minecraft.state.property.Property
 import net.minecraft.util.Identifier
 import org.teamvoided.voided_variance.VoidedVariance.mc
-import org.teamvoided.voided_variance.block.CompositeBlock
-import org.teamvoided.voided_variance.block.VSlabBlock
-import org.teamvoided.voided_variance.block.VStairsBlock
-import org.teamvoided.voided_variance.block.VWallBlock
+import org.teamvoided.voided_variance.block.*
 import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.init.VVItems
 import org.teamvoided.voided_variance.utils.BOOKSHELFS
@@ -41,9 +39,10 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
     ) + BOOKSHELFS
 
     override fun generateBlockStateModels(gen: BlockStateModelGenerator) {
-        blocks@ for (block in VVBlocks.BLOCKS) {
-            if (blockExclude.contains(block)) continue@blocks
+        for (block in VVBlocks.BLOCKS) {
+            if (blockExclude.contains(block)) continue
             when (block) {
+                is CarpetPlateBlock -> continue
                 is InfestedBlock -> gen.registerInfested(block.regularBlock, block)
                 is VWallBlock -> {
                     if (block == VVBlocks.PURPUR_WALL) gen.wallOffset(block, block.block)
@@ -86,6 +85,26 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         gen.bookshelf(VVBlocks.BAMBOO_BOOKSHELF, Blocks.BAMBOO_PLANKS)
         gen.bookshelf(VVBlocks.CRIMSON_BOOKSHELF, Blocks.CRIMSON_PLANKS)
         gen.bookshelf(VVBlocks.WARPED_BOOKSHELF, Blocks.WARPED_PLANKS)
+
+
+        gen.carpetPlate(VVBlocks.WHITE_CARPET_PLATE, Blocks.WHITE_WOOL)
+        gen.carpetPlate(VVBlocks.ORANGE_CARPET_PLATE, Blocks.ORANGE_WOOL)
+        gen.carpetPlate(VVBlocks.MAGENTA_CARPET_PLATE, Blocks.MAGENTA_WOOL)
+        gen.carpetPlate(VVBlocks.LIGHT_BLUE_CARPET_PLATE, Blocks.LIGHT_BLUE_WOOL)
+        gen.carpetPlate(VVBlocks.YELLOW_CARPET_PLATE, Blocks.YELLOW_WOOL)
+        gen.carpetPlate(VVBlocks.LIME_CARPET_PLATE, Blocks.LIME_WOOL)
+        gen.carpetPlate(VVBlocks.PINK_CARPET_PLATE, Blocks.PINK_WOOL)
+        gen.carpetPlate(VVBlocks.GRAY_CARPET_PLATE, Blocks.GRAY_WOOL)
+        gen.carpetPlate(VVBlocks.LIGHT_GRAY_CARPET_PLATE, Blocks.LIGHT_GRAY_WOOL)
+        gen.carpetPlate(VVBlocks.CYAN_CARPET_PLATE, Blocks.CYAN_WOOL)
+        gen.carpetPlate(VVBlocks.PURPLE_CARPET_PLATE, Blocks.PURPLE_WOOL)
+        gen.carpetPlate(VVBlocks.BLUE_CARPET_PLATE, Blocks.BLUE_WOOL)
+        gen.carpetPlate(VVBlocks.BROWN_CARPET_PLATE, Blocks.BROWN_WOOL)
+        gen.carpetPlate(VVBlocks.GREEN_CARPET_PLATE, Blocks.GREEN_WOOL)
+        gen.carpetPlate(VVBlocks.RED_CARPET_PLATE, Blocks.RED_WOOL)
+        gen.carpetPlate(VVBlocks.BLACK_CARPET_PLATE, Blocks.BLACK_WOOL)
+
+        gen.carpetPlate(VVBlocks.MOSS_CARPET_PLATE, Blocks.MOSS_BLOCK)
     }
 
     override fun generateItemModels(gen: ItemModelGenerator) {
@@ -121,7 +140,7 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
     private fun BlockStateModelGenerator.bookshelf(bookshelf: Block, top: Block) {
         val texture = Texture.sideEnd(Texture.getId(bookshelf), Texture.getId(top))
         val model = Models.CUBE_COLUMN.upload(bookshelf, texture, this.modelCollector)
-        this.blockStateCollector.accept(BlockStateModelGenerator.createSingletonBlockState(bookshelf, model))
+        this.blockStateCollector.accept(createSingletonBlockState(bookshelf, model))
     }
 
     private fun BlockStateModelGenerator.denseCube(block: Block) {
@@ -140,6 +159,13 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
                 .with(CompositeBlock.LOWER_SOUTH_EAST, true, variant(bottomModel, VariantSettings.Rotation.R180))
                 .with(CompositeBlock.LOWER_SOUTH_WEST, true, variant(bottomModel, VariantSettings.Rotation.R270))
         )
+    }
+
+    fun BlockStateModelGenerator.carpetPlate(plate: Block, wool: Block) {
+        val up = TexturedModel.CARPET.get(wool).upload(plate, "_up", this.modelCollector)
+        val down = TexturedModels.CARPET_DOWN.get(wool).upload(plate, "_down", this.modelCollector)
+        this.registerParentedItemModel(plate, up)
+        this.blockStateCollector.accept(BlockStateModelGenerator.createPressurePlateBlockState(plate, up, down))
     }
 
     fun <T : Comparable<T>> MultipartBlockStateSupplier.with(

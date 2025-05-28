@@ -4,6 +4,7 @@ import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.teamvoided.voided_variance.init.FabricEvents
+import org.teamvoided.voided_variance.init.VVBlockSetTypes
 import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.init.VVItems
 import org.teamvoided.voided_variance.init.VVRecipeTypes
@@ -18,6 +19,7 @@ object VoidedVariance {
 
     fun init() {
         log.info("My Void, your Variance")
+        VVBlockSetTypes.init()
         VVItems.init()
         VVBlocks.init()
         VVTabs.init()
