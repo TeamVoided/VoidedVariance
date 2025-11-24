@@ -62,6 +62,13 @@ class RecipeProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Prov
         e.carpetPlate(VVBlocks.RED_CARPET_PLATE, Blocks.RED_CARPET)
         e.carpetPlate(VVBlocks.BLACK_CARPET_PLATE, Blocks.BLACK_CARPET)
         e.carpetPlate(VVBlocks.MOSS_CARPET_PLATE, Blocks.MOSS_CARPET)
+
+        ShapedRecipeJsonFactory.create(RecipeCategory.DECORATIONS, VVBlocks.TINTED_GLASS_PANE, 16)
+            .ingredient('#', Blocks.TINTED_GLASS)
+            .pattern("###")
+            .pattern("###")
+            .criterion("has_glass", conditionsFromItem(Blocks.TINTED_GLASS))
+            .offerTo(e)
     }
 
     fun RecipeExporter.sandstone() {

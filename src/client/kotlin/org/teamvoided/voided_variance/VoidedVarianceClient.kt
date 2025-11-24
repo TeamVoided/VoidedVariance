@@ -7,6 +7,7 @@ import net.minecraft.client.util.ColorUtil
 import net.minecraft.client.util.ColorUtil.Argb32.mixColor
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.PotionContentsComponent
+import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.init.VVItems
 import org.teamvoided.voided_variance.utils.datagen.CUTOUT_BLOCKS
 
@@ -16,6 +17,9 @@ object VoidedVarianceClient {
 
     fun init() {
         CUTOUT_BLOCKS.forEach { BlockRenderLayerMap.INSTANCE.putBlock(it, RenderLayer.getCutout()) }
+        listOf(VVBlocks.TINTED_GLASS_PANE)
+            .forEach { BlockRenderLayerMap.INSTANCE.putBlock(it, RenderLayer.getTranslucent()) }
+
         ColorProviderRegistry.ITEM.register(
             { stack, tintIdx ->
                 if (tintIdx > 0) -1 else

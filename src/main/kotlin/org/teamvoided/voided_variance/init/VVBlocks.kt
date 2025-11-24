@@ -228,6 +228,7 @@ object VVBlocks {
 
     val MOSS_CARPET_PLATE = register("moss_carpet_plate", CarpetPlateBlock(MOSS, copy(Blocks.MOSS_CARPET)))
 
+    val TINTED_GLASS_PANE = register("tinted_glass_pane", TintedPaneBlock(copy(Blocks.TINTED_GLASS)))
 
     fun init() {
         BOOKSHELFS.onEach {

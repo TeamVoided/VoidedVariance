@@ -8,9 +8,11 @@ import net.minecraft.block.InfestedBlock
 import net.minecraft.data.client.ItemModelGenerator
 import net.minecraft.data.client.model.*
 import net.minecraft.data.client.model.BlockStateModelGenerator.createSingletonBlockState
+import net.minecraft.data.client.model.VariantSettings.Rotation
 import net.minecraft.state.property.Properties
 import net.minecraft.state.property.Property
 import net.minecraft.util.Identifier
+import org.teamvoided.voided_variance.VoidedVariance.id
 import org.teamvoided.voided_variance.VoidedVariance.mc
 import org.teamvoided.voided_variance.block.*
 import org.teamvoided.voided_variance.init.VVBlocks
@@ -35,7 +37,8 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         VVBlocks.SMOOTH_QUARTZ_WALL,
         VVBlocks.QUARTZ_WALL,
 
-        VVBlocks.HEAVY_CUBE
+        VVBlocks.HEAVY_CUBE,
+        VVBlocks.TINTED_GLASS_PANE
     ) + BOOKSHELFS
 
     override fun generateBlockStateModels(gen: BlockStateModelGenerator) {
@@ -105,6 +108,8 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         gen.carpetPlate(VVBlocks.BLACK_CARPET_PLATE, Blocks.BLACK_WOOL)
 
         gen.carpetPlate(VVBlocks.MOSS_CARPET_PLATE, Blocks.MOSS_BLOCK)
+
+        gen.tintedPane(Blocks.TINTED_GLASS, VVBlocks.TINTED_GLASS_PANE)
     }
 
     override fun generateItemModels(gen: ItemModelGenerator) {
@@ -166,6 +171,11 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         val down = TexturedModels.CARPET_DOWN.get(wool).upload(plate, "_down", this.modelCollector)
         this.registerParentedItemModel(plate, up)
         this.blockStateCollector.accept(BlockStateModelGenerator.createPressurePlateBlockState(plate, up, down))
+    }
+
+    fun BlockStateModelGenerator.tintedPane(glass: Block, glassPane: Block) {
+        val item = glassPane.asItem()
+        Models.SINGLE_LAYER_ITEM.upload(ModelIds.getItemModelId(item), Texture.layer0(glass), this.modelCollector)
     }
 
     fun <T : Comparable<T>> MultipartBlockStateSupplier.with(
