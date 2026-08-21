@@ -2,17 +2,21 @@ package org.teamvoided.voided_variance.data.gen.prov
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider
-import net.minecraft.block.Block
-import net.minecraft.block.Blocks
-import net.minecraft.block.InfestedBlock
-import net.minecraft.data.client.ItemModelGenerator
-import net.minecraft.data.client.model.*
-import net.minecraft.data.client.model.BlockStateModelGenerator.createSingletonBlockState
-import net.minecraft.data.client.model.VariantSettings.Rotation
-import net.minecraft.state.property.Properties
-import net.minecraft.state.property.Property
-import net.minecraft.util.Identifier
-import org.teamvoided.voided_variance.VoidedVariance.id
+import net.minecraft.data.models.BlockModelGenerators
+import net.minecraft.data.models.BlockModelGenerators.createSimpleBlock
+import net.minecraft.data.models.ItemModelGenerators
+import net.minecraft.data.models.blockstates.*
+import net.minecraft.data.models.model.ModelLocationUtils
+import net.minecraft.data.models.model.ModelTemplates
+import net.minecraft.data.models.model.TextureMapping
+import net.minecraft.data.models.model.TextureSlot
+import net.minecraft.data.models.model.TexturedModel
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.InfestedBlock
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.world.level.block.state.properties.Property
 import org.teamvoided.voided_variance.VoidedVariance.mc
 import org.teamvoided.voided_variance.block.*
 import org.teamvoided.voided_variance.init.VVBlocks
@@ -21,6 +25,7 @@ import org.teamvoided.voided_variance.utils.BOOKSHELFS
 import org.teamvoided.voided_variance.utils.datagen.*
 
 class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
+
     private val blockExclude = setOf(
         VVBlocks.BRICK_FENCE,
         VVBlocks.REDSTONE_LANTERN,
@@ -41,12 +46,12 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         VVBlocks.TINTED_GLASS_PANE
     ) + BOOKSHELFS
 
-    override fun generateBlockStateModels(gen: BlockStateModelGenerator) {
+    override fun generateBlockStateModels(gen: BlockModelGenerators) {
         for (block in VVBlocks.BLOCKS) {
             if (blockExclude.contains(block)) continue
             when (block) {
                 is CarpetPlateBlock -> continue
-                is InfestedBlock -> gen.registerInfested(block.regularBlock, block)
+                is InfestedBlock -> gen.copyModel(block.hostBlock, block)
                 is VWallBlock -> {
                     if (block == VVBlocks.PURPUR_WALL) gen.wallOffset(block, block.block)
                     else gen.wall(block, block.block)
@@ -54,7 +59,7 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
 
                 is VSlabBlock -> gen.slab(block, block.block)
                 is VStairsBlock -> gen.stairs(block, block.block)
-                else -> gen.registerSimpleCubeAll(block)
+                else -> gen.createTrivialCube(block)
             }
         }
 
@@ -112,78 +117,81 @@ class ModelProvider(output: FabricDataOutput) : FabricModelProvider(output) {
         gen.tintedPane(Blocks.TINTED_GLASS, VVBlocks.TINTED_GLASS_PANE)
     }
 
-    override fun generateItemModels(gen: ItemModelGenerator) {
-        gen.register(VVItems.TINTED_GLASS_BOTTLE, Models.SINGLE_LAYER_ITEM)
+    override fun generateItemModels(gen: ItemModelGenerators) {
+        gen.generateFlatItem(VVItems.TINTED_GLASS_BOTTLE, ModelTemplates.FLAT_ITEM)
     }
 
-    private fun BlockStateModelGenerator.redstoneLantern(block: Block) {
-        this.registerItemModel(block.asItem())
+    private fun BlockModelGenerators.redstoneLantern(block: Block) {
+        createSimpleFlatItemModel(block.asItem())
 
-        val lantern = TexturedModel.TEMPLATE_LANTERN.create(block, this.modelCollector)
-        val lanternHanging = TexturedModel.TEMPLATE_HANGING_LANTERN.create(block, this.modelCollector)
+        val lantern = TexturedModel.LANTERN.create(block, modelOutput)
+        val lanternHanging = TexturedModel.HANGING_LANTERN.create(block, modelOutput)
 
-        val litTex = Texture().put(TextureKey.LANTERN, block.model("_lit"))
-        val litLantern = Models.TEMPLATE_LANTERN.upload(block.model("_lit"), litTex, this.modelCollector)
-        val litLanternHanging =
-            Models.TEMPLATE_HANGING_LANTERN.upload(block.model("_lit_hanging"), litTex, this.modelCollector)
+        val litTex = TextureMapping().put(TextureSlot.LANTERN, block.model("_lit"))
+        val litLantern = ModelTemplates.LANTERN.create(block.model("_lit"), litTex, modelOutput)
+        val litLanternHanging = ModelTemplates.HANGING_LANTERN.create(block.model("_lit_hanging"), litTex, modelOutput)
 
-        this.blockStateCollector.accept(
-            VariantsBlockStateSupplier.create(block).coordinate(
-                BlockStateVariantMap.create(Properties.HANGING, Properties.LIT)
-                    .register(false, false, lantern.toVariant())
-                    .register(true, false, lanternHanging.toVariant())
-                    .register(false, true, litLantern.toVariant())
-                    .register(true, true, litLanternHanging.toVariant())
+        blockStateOutput.accept(
+            MultiVariantGenerator.multiVariant(block).with(
+                PropertyDispatch.properties(BlockStateProperties.HANGING, BlockStateProperties.LIT)
+                    .select(false, false, lantern.toVariant())
+                    .select(true, false, lanternHanging.toVariant())
+                    .select(false, true, litLantern.toVariant())
+                    .select(true, true, litLanternHanging.toVariant())
             )
         )
     }
 
-    private fun BlockStateModelGenerator.addAxis(block: Block) = this.blockStateCollector.accept(
-        BlockStateModelGenerator.createAxisRotatedBlockState(block, ModelIds.getBlockModelId(block))
+    private fun BlockModelGenerators.addAxis(block: Block) = blockStateOutput.accept(
+        BlockModelGenerators.createAxisAlignedPillarBlock(block, ModelLocationUtils.getModelLocation(block))
     )
 
-    private fun BlockStateModelGenerator.bookshelf(bookshelf: Block, top: Block) {
-        val texture = Texture.sideEnd(Texture.getId(bookshelf), Texture.getId(top))
-        val model = Models.CUBE_COLUMN.upload(bookshelf, texture, this.modelCollector)
-        this.blockStateCollector.accept(createSingletonBlockState(bookshelf, model))
+    private fun BlockModelGenerators.bookshelf(bookshelf: Block, top: Block) {
+        val texture = TextureMapping.column(TextureMapping.getBlockTexture(bookshelf), TextureMapping.getBlockTexture(top))
+        val model = ModelTemplates.CUBE_COLUMN.create(bookshelf, texture, modelOutput)
+        blockStateOutput.accept(createSimpleBlock(bookshelf, model))
     }
 
-    private fun BlockStateModelGenerator.denseCube(block: Block) {
-        val topModel = ModelIds.getBlockSubModelId(block, "_top")
-        val bottomModel = ModelIds.getBlockSubModelId(block, "_bottom")
-        val itemModel = TexturedModel.CUBE_BOTTOM_TOP.create(block, this.modelCollector)
-        this.registerParentedItemModel(block.asItem(), itemModel)
-        this.blockStateCollector.accept(
-            MultipartBlockStateSupplier.create(block)
-                .with(CompositeBlock.UPPER_NORTH_EAST, true, variant(topModel, VariantSettings.Rotation.R90))
+    private fun BlockModelGenerators.denseCube(block: Block) {
+        val topModel = ModelLocationUtils.getModelLocation(block, "_top")
+        val bottomModel = ModelLocationUtils.getModelLocation(block, "_bottom")
+        val itemModel = TexturedModel.CUBE_TOP_BOTTOM.create(block, modelOutput)
+        delegateItemModel(block.asItem(), itemModel)
+        blockStateOutput.accept(
+            MultiPartGenerator.multiPart(block)
+                .with(CompositeBlock.UPPER_NORTH_EAST, true, variant(topModel, VariantProperties.Rotation.R90))
                 .with(CompositeBlock.UPPER_NORTH_WEST, true, variant(topModel))
-                .with(CompositeBlock.UPPER_SOUTH_EAST, true, variant(topModel, VariantSettings.Rotation.R180))
-                .with(CompositeBlock.UPPER_SOUTH_WEST, true, variant(topModel, VariantSettings.Rotation.R270))
-                .with(CompositeBlock.LOWER_NORTH_EAST, true, variant(bottomModel, VariantSettings.Rotation.R90))
+                .with(CompositeBlock.UPPER_SOUTH_EAST, true, variant(topModel, VariantProperties.Rotation.R180))
+                .with(CompositeBlock.UPPER_SOUTH_WEST, true, variant(topModel, VariantProperties.Rotation.R270))
+                .with(CompositeBlock.LOWER_NORTH_EAST, true, variant(bottomModel, VariantProperties.Rotation.R90))
                 .with(CompositeBlock.LOWER_NORTH_WEST, true, variant(bottomModel))
-                .with(CompositeBlock.LOWER_SOUTH_EAST, true, variant(bottomModel, VariantSettings.Rotation.R180))
-                .with(CompositeBlock.LOWER_SOUTH_WEST, true, variant(bottomModel, VariantSettings.Rotation.R270))
+                .with(CompositeBlock.LOWER_SOUTH_EAST, true, variant(bottomModel, VariantProperties.Rotation.R180))
+                .with(CompositeBlock.LOWER_SOUTH_WEST, true, variant(bottomModel, VariantProperties.Rotation.R270))
         )
     }
 
-    fun BlockStateModelGenerator.carpetPlate(plate: Block, wool: Block) {
-        val up = TexturedModel.CARPET.get(wool).upload(plate, "_up", this.modelCollector)
-        val down = TexturedModels.CARPET_DOWN.get(wool).upload(plate, "_down", this.modelCollector)
-        this.registerParentedItemModel(plate, up)
-        this.blockStateCollector.accept(BlockStateModelGenerator.createPressurePlateBlockState(plate, up, down))
+    fun BlockModelGenerators.carpetPlate(plate: Block, wool: Block) {
+        val up = TexturedModel.CARPET.get(wool).createWithSuffix(plate, "_up", modelOutput)
+        val down = TexturedModels.CARPET_DOWN.get(wool).createWithSuffix(plate, "_down", modelOutput)
+        delegateItemModel(plate, up)
+        blockStateOutput.accept(BlockModelGenerators.createPressurePlate(plate, up, down))
     }
 
-    fun BlockStateModelGenerator.tintedPane(glass: Block, glassPane: Block) {
+    fun BlockModelGenerators.tintedPane(glass: Block, glassPane: Block) {
         val item = glassPane.asItem()
-        Models.SINGLE_LAYER_ITEM.upload(ModelIds.getItemModelId(item), Texture.layer0(glass), this.modelCollector)
+        ModelTemplates.FLAT_ITEM.create(
+            ModelLocationUtils.getModelLocation(item),
+            TextureMapping.layer0(glass),
+            modelOutput
+        )
     }
 
-    fun <T : Comparable<T>> MultipartBlockStateSupplier.with(
-        property: Property<T>, value: T, vararg variants: BlockStateVariant,
-    ) = this.with(When.create().set(property, value), *variants)
+    fun <T : Comparable<T>> MultiPartGenerator.with(
+        property: Property<T>, value: T, vararg variants: Variant,
+    ) = with(Condition.condition().term(property, value), *variants)
 
-    fun variant(model: Identifier) = BlockStateVariant().put(VariantSettings.MODEL, model)
-    fun variant(model: Identifier, rotation: VariantSettings.Rotation) =
-        variant(model).put(VariantSettings.Y, rotation).put(VariantSettings.UVLOCK, true)
+    fun variant(model: ResourceLocation) = Variant().with(VariantProperties.MODEL, model)
+    fun variant(model: ResourceLocation, rotation: VariantProperties.Rotation) =
+        variant(model).with(VariantProperties.Y_ROT, rotation).with(VariantProperties.UV_LOCK, true)
 
 }

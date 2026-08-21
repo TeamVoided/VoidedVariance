@@ -1,12 +1,12 @@
 package org.teamvoided.voided_variance.data.gen.tags
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider.BlockTagProvider
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBlockTags
-import net.minecraft.block.Blocks
-import net.minecraft.registry.HolderLookup
-import net.minecraft.registry.tag.BlockTags
-import net.minecraft.registry.tag.BlockTags.ENCHANTMENT_POWER_PROVIDER
+import net.minecraft.core.HolderLookup
+import net.minecraft.tags.BlockTags
+import net.minecraft.tags.BlockTags.ENCHANTMENT_POWER_PROVIDER
+import net.minecraft.world.level.block.Blocks
 import org.teamvoided.voided_variance.data.tags.CBlockTags
 import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.utils.BOOKSHELFS
@@ -14,9 +14,9 @@ import org.teamvoided.voided_variance.utils.addAll
 import org.teamvoided.voided_variance.utils.datagen.*
 import java.util.concurrent.CompletableFuture
 
-class BlockTagProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Provider>) :
-    FabricTagProvider.BlockTagProvider(o, r) {
-    override fun configure(wrapperLookup: HolderLookup.Provider) {
+class BlockTagProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Provider>) : BlockTagProvider(o, r) {
+
+    override fun addTags(lookup: HolderLookup.Provider) {
         vanillaTags()
         mineable()
         conventionalTags()
@@ -80,13 +80,13 @@ class BlockTagProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Pr
     }
 
     private fun mineable() {
-        getOrCreateTagBuilder(BlockTags.PICKAXE_MINEABLE)
+        getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_PICKAXE)
             .addAll(PICKAXABLE)
-        getOrCreateTagBuilder(BlockTags.AXE_MINEABLE)
+        getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_AXE)
             .addAll(AXABLE)
-        getOrCreateTagBuilder(BlockTags.SHOVEL_MINEABLE)
+        getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_SHOVEL)
             .addAll(SHOVELABLE)
-        getOrCreateTagBuilder(BlockTags.HOE_MINEABLE)
+        getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_HOE)
             .addAll(HOEABLE)
 
         getOrCreateTagBuilder(BlockTags.NEEDS_STONE_TOOL)

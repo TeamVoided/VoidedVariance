@@ -2,11 +2,13 @@ package org.teamvoided.voided_variance.init
 
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry
 import net.fabricmc.fabric.api.registry.FuelRegistry
-import net.minecraft.block.*
-import net.minecraft.block.AbstractBlock.Settings.copy
-import net.minecraft.block.Blocks.luminanceOf
-import net.minecraft.registry.Registries
-import net.minecraft.sound.BlockSoundGroup
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.world.level.block.*
+import net.minecraft.world.level.block.Blocks.litBlockEmission
+import net.minecraft.world.level.block.state.BlockBehaviour
+import net.minecraft.world.level.block.state.BlockBehaviour.Properties.ofFullCopy
+import net.minecraft.world.level.material.MapColor
+import net.minecraft.world.level.material.PushReaction
 import org.teamvoided.voided_variance.VoidedVariance.id
 import org.teamvoided.voided_variance.block.*
 import org.teamvoided.voided_variance.init.VVBlockSetTypes.MOSS
@@ -20,23 +22,23 @@ import org.teamvoided.voided_variance.utils.register
 object VVBlocks {
     val BLOCKS = mutableListOf<Block>()
 
-    private fun deepslate(): AbstractBlock.Settings =
-        AbstractBlock.Settings.create().mapColor(MapColor.DEEPSLATE).sounds(BlockSoundGroup.DEEPSLATE)
+    private fun deepslate(): BlockBehaviour.Properties =
+        BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.DEEPSLATE)
 
-    val obsidian = copy(Blocks.OBSIDIAN).block()
-    val cryingObsidian = copy(Blocks.CRYING_OBSIDIAN).block()
+    val obsidian = ofFullCopy(Blocks.OBSIDIAN).pushReaction(PushReaction.BLOCK)
+    val cryingObsidian = ofFullCopy(Blocks.CRYING_OBSIDIAN).pushReaction(PushReaction.BLOCK)
 
     // Brick fence
-    val BRICK_FENCE = register("brick_fence", FenceBlock(copy(Blocks.BRICKS))).pickaxe()
+    val BRICK_FENCE = register("brick_fence", FenceBlock(ofFullCopy(Blocks.BRICKS))).pickaxe()
 
     val REDSTONE_LANTERN = register(
-        "redstone_lantern", RedstoneLanternBlock(copy(Blocks.LANTERN).luminance(luminanceOf(8)))
+        "redstone_lantern", RedstoneLanternBlock(ofFullCopy(Blocks.LANTERN).lightLevel(litBlockEmission(8)))
     ).pickaxe().cutout()
 
     // Infested blocks
     val INFESTED_MOSSY_COBBLESTONE = register(
         "infested_mossy_cobblestone",
-        InfestedBlock(Blocks.MOSSY_COBBLESTONE, AbstractBlock.Settings.create().mapColor(MapColor.CLAY))
+        InfestedBlock(Blocks.MOSSY_COBBLESTONE, BlockBehaviour.Properties.of().mapColor(MapColor.CLAY))
     ).pickaxe()
     val INFESTED_COBBLED_DEEPSLATE =
         register("infested_cobbled_deepslate", InfestedBlock(Blocks.COBBLED_DEEPSLATE, deepslate())).pickaxe()
@@ -148,7 +150,7 @@ object VVBlocks {
     val SNOW_WALL = register("snow_wall", Blocks.SNOW_BLOCK.toWall()).shovel()
 
 
-    val HEAVY_CUBE = register("heavy_cube", CompositeBlock(copy(Blocks.HEAVY_CORE).nonOpaque()))
+    val HEAVY_CUBE = register("heavy_cube", CompositeBlock(ofFullCopy(Blocks.HEAVY_CORE).noOcclusion()))
         .pickaxe().cutout()
     // Buttons
 //    val SMOOTH_STONE_BUTTON = createStoneBtn(Blocks.SMOOTH_STONE)
@@ -164,71 +166,72 @@ object VVBlocks {
 
 
     // Polished Sandstone
-    val POLISHED_SANDSTONE = register("polished_sandstone", Block(copy(Blocks.CUT_SANDSTONE))).pickaxe()
+    val POLISHED_SANDSTONE = register("polished_sandstone", Block(ofFullCopy(Blocks.CUT_SANDSTONE))).pickaxe()
     val POLISHED_SANDSTONE_STAIRS = register("polished_sandstone_stairs", POLISHED_SANDSTONE.toStairs()).pickaxe()
     val POLISHED_SANDSTONE_SLAB = register("polished_sandstone_slab", POLISHED_SANDSTONE.toSlab()).pickaxe()
     val POLISHED_SANDSTONE_WALL = register("polished_sandstone_wall", POLISHED_SANDSTONE.toWall())
 
-    val POLISHED_RED_SANDSTONE = register("polished_red_sandstone", Block(copy(Blocks.CUT_RED_SANDSTONE))).pickaxe()
+    val POLISHED_RED_SANDSTONE =
+        register("polished_red_sandstone", Block(ofFullCopy(Blocks.CUT_RED_SANDSTONE))).pickaxe()
     val POLISHED_RED_SANDSTONE_STAIRS =
         register("polished_red_sandstone_stairs", POLISHED_RED_SANDSTONE.toStairs()).pickaxe()
     val POLISHED_RED_SANDSTONE_SLAB = register("polished_red_sandstone_slab", POLISHED_RED_SANDSTONE.toSlab()).pickaxe()
     val POLISHED_RED_SANDSTONE_WALL = register("polished_red_sandstone_wall", POLISHED_RED_SANDSTONE.toWall())
 
     // Rough Sandstone
-    val ROUGH_SANDSTONE = register("rough_sandstone", Block(copy(Blocks.SANDSTONE))).pickaxe()
+    val ROUGH_SANDSTONE = register("rough_sandstone", Block(ofFullCopy(Blocks.SANDSTONE))).pickaxe()
     val ROUGH_SANDSTONE_STAIRS = register("rough_sandstone_stairs", ROUGH_SANDSTONE.toStairs()).pickaxe()
     val ROUGH_SANDSTONE_SLAB = register("rough_sandstone_slab", ROUGH_SANDSTONE.toSlab()).pickaxe()
     val ROUGH_SANDSTONE_WALL = register("rough_sandstone_wall", ROUGH_SANDSTONE.toWall())
 
-    val ROUGH_RED_SANDSTONE = register("rough_red_sandstone", Block(copy(Blocks.RED_SANDSTONE))).pickaxe()
+    val ROUGH_RED_SANDSTONE = register("rough_red_sandstone", Block(ofFullCopy(Blocks.RED_SANDSTONE))).pickaxe()
     val ROUGH_RED_SANDSTONE_STAIRS = register("rough_red_sandstone_stairs", ROUGH_RED_SANDSTONE.toStairs()).pickaxe()
     val ROUGH_RED_SANDSTONE_SLAB = register("rough_red_sandstone_slab", ROUGH_RED_SANDSTONE.toSlab()).pickaxe()
     val ROUGH_RED_SANDSTONE_WALL = register("rough_red_sandstone_wall", ROUGH_RED_SANDSTONE.toWall())
 
     // Smooth Lapis
-    val SMOOTH_LAPIS = register("smooth_lapis", Block(copy(Blocks.LAPIS_BLOCK))).pickaxe()
+    val SMOOTH_LAPIS = register("smooth_lapis", Block(ofFullCopy(Blocks.LAPIS_BLOCK))).pickaxe()
     val SMOOTH_LAPIS_STAIRS = register("smooth_lapis_stairs", SMOOTH_LAPIS.toStairs()).pickaxe()
     val SMOOTH_LAPIS_SLAB = register("smooth_lapis_slab", SMOOTH_LAPIS.toSlab()).pickaxe()
     val SMOOTH_LAPIS_WALL = register("smooth_lapis_wall", SMOOTH_LAPIS.toWall())
 
-    val SPRUCE_BOOKSHELF = register("spruce_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
-    val BIRCH_BOOKSHELF = register("birch_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
-    val JUNGLE_BOOKSHELF = register("jungle_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
-    val ACACIA_BOOKSHELF = register("acacia_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
-    val DARK_OAK_BOOKSHELF = register("dark_oak_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
-    val MANGROVE_BOOKSHELF = register("mangrove_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
-    val CHERRY_BOOKSHELF = register("cherry_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
-    val BAMBOO_BOOKSHELF = register("bamboo_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
-    val CRIMSON_BOOKSHELF = register("crimson_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
-    val WARPED_BOOKSHELF = register("warped_bookshelf", Block(copy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val SPRUCE_BOOKSHELF = register("spruce_bookshelf", Block(ofFullCopy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val BIRCH_BOOKSHELF = register("birch_bookshelf", Block(ofFullCopy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val JUNGLE_BOOKSHELF = register("jungle_bookshelf", Block(ofFullCopy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val ACACIA_BOOKSHELF = register("acacia_bookshelf", Block(ofFullCopy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val DARK_OAK_BOOKSHELF = register("dark_oak_bookshelf", Block(ofFullCopy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val MANGROVE_BOOKSHELF = register("mangrove_bookshelf", Block(ofFullCopy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val CHERRY_BOOKSHELF = register("cherry_bookshelf", Block(ofFullCopy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val BAMBOO_BOOKSHELF = register("bamboo_bookshelf", Block(ofFullCopy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val CRIMSON_BOOKSHELF = register("crimson_bookshelf", Block(ofFullCopy(Blocks.BOOKSHELF))).axe().bookshelf()
+    val WARPED_BOOKSHELF = register("warped_bookshelf", Block(ofFullCopy(Blocks.BOOKSHELF))).axe().bookshelf()
 
 
     // Carpet Plates
-    val WHITE_CARPET_PLATE = register("white_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.WHITE_CARPET)))
-    val ORANGE_CARPET_PLATE = register("orange_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.ORANGE_CARPET)))
-    val MAGENTA_CARPET_PLATE = register("magenta_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.MAGENTA_CARPET)))
+    val WHITE_CARPET_PLATE = register("white_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.WHITE_CARPET)))
+    val ORANGE_CARPET_PLATE = register("orange_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.ORANGE_CARPET)))
+    val MAGENTA_CARPET_PLATE =
+        register("magenta_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.MAGENTA_CARPET)))
     val LIGHT_BLUE_CARPET_PLATE =
-        register("light_blue_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.LIGHT_BLUE_CARPET)))
-    val YELLOW_CARPET_PLATE = register("yellow_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.YELLOW_CARPET)))
-    val LIME_CARPET_PLATE = register("lime_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.LIME_CARPET)))
-    val PINK_CARPET_PLATE = register("pink_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.PINK_CARPET)))
-    val GRAY_CARPET_PLATE = register("gray_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.GRAY_CARPET)))
+        register("light_blue_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.LIGHT_BLUE_CARPET)))
+    val YELLOW_CARPET_PLATE = register("yellow_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.YELLOW_CARPET)))
+    val LIME_CARPET_PLATE = register("lime_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.LIME_CARPET)))
+    val PINK_CARPET_PLATE = register("pink_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.PINK_CARPET)))
+    val GRAY_CARPET_PLATE = register("gray_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.GRAY_CARPET)))
     val LIGHT_GRAY_CARPET_PLATE =
-        register("light_gray_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.LIGHT_GRAY_CARPET)))
-    val CYAN_CARPET_PLATE = register("cyan_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.CYAN_CARPET)))
-    val PURPLE_CARPET_PLATE = register("purple_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.PURPLE_CARPET)))
-    val BLUE_CARPET_PLATE = register("blue_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.BLUE_CARPET)))
-    val BROWN_CARPET_PLATE = register("brown_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.BROWN_CARPET)))
-    val GREEN_CARPET_PLATE = register("green_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.GREEN_CARPET)))
-    val RED_CARPET_PLATE = register("red_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.RED_CARPET)))
-    val BLACK_CARPET_PLATE = register("black_carpet_plate", CarpetPlateBlock(WOOL, copy(Blocks.BLACK_CARPET)))
+        register("light_gray_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.LIGHT_GRAY_CARPET)))
+    val CYAN_CARPET_PLATE = register("cyan_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.CYAN_CARPET)))
+    val PURPLE_CARPET_PLATE = register("purple_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.PURPLE_CARPET)))
+    val BLUE_CARPET_PLATE = register("blue_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.BLUE_CARPET)))
+    val BROWN_CARPET_PLATE = register("brown_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.BROWN_CARPET)))
+    val GREEN_CARPET_PLATE = register("green_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.GREEN_CARPET)))
+    val RED_CARPET_PLATE = register("red_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.RED_CARPET)))
+    val BLACK_CARPET_PLATE = register("black_carpet_plate", CarpetPlateBlock(WOOL, ofFullCopy(Blocks.BLACK_CARPET)))
 
 
+    val MOSS_CARPET_PLATE = register("moss_carpet_plate", CarpetPlateBlock(MOSS, ofFullCopy(Blocks.MOSS_CARPET)))
 
-    val MOSS_CARPET_PLATE = register("moss_carpet_plate", CarpetPlateBlock(MOSS, copy(Blocks.MOSS_CARPET)))
-
-    val TINTED_GLASS_PANE = register("tinted_glass_pane", TintedPaneBlock(copy(Blocks.TINTED_GLASS)))
+    val TINTED_GLASS_PANE = register("tinted_glass_pane", TintedPaneBlock(ofFullCopy(Blocks.TINTED_GLASS)))
 
     fun init() {
         BOOKSHELFS.onEach {
@@ -244,7 +247,7 @@ object VVBlocks {
     }
 
     fun registerNoItem(id: String, item: Block): Block {
-        val holder = Registries.BLOCK.register(id(id), item)
+        val holder = BuiltInRegistries.BLOCK.register(id(id), item)
         BLOCKS.add(holder)
         return holder
     }

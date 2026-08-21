@@ -2,13 +2,14 @@ package org.teamvoided.voided_variance.init
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.fabricmc.fabric.api.registry.FabricBrewingRecipeRegistryBuilder
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Items
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
-import net.minecraft.util.hit.BlockHitResult
-import net.minecraft.util.hit.HitResult
-import net.minecraft.world.World
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.Level
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.HitResult
+
 import org.teamvoided.voided_variance.block.CompositeBlock.Companion.POS_TO_CORNER
 import org.teamvoided.voided_variance.block.CompositeBlock.Companion.addToComposite
 import org.teamvoided.voided_variance.block.CompositeBlock.Companion.getCornerPosition
@@ -18,36 +19,36 @@ import org.teamvoided.voidlib.helpers.map
 object FabricEvents {
     fun init() {
         FabricBrewingRecipeRegistryBuilder.BUILD.register { builder ->
-            builder.addBottomIngredient(VVItems.TINTED_POTION)
-            builder.addBottomIngredient(VVItems.TINTED_SPLASH_POTION)
-            builder.addBottomIngredient(VVItems.TINTED_LINGERING_POTION)
+            builder.addContainer(VVItems.TINTED_POTION)
+            builder.addContainer(VVItems.TINTED_SPLASH_POTION)
+            builder.addContainer(VVItems.TINTED_LINGERING_POTION)
 
-            builder.addItemRecipe(VVItems.TINTED_POTION, Items.GUNPOWDER, VVItems.TINTED_SPLASH_POTION)
-            builder.addItemRecipe(VVItems.TINTED_SPLASH_POTION, Items.DRAGON_BREATH, VVItems.TINTED_LINGERING_POTION)
+            builder.addContainerRecipe(VVItems.TINTED_POTION, Items.GUNPOWDER, VVItems.TINTED_SPLASH_POTION)
+            builder.addContainerRecipe(VVItems.TINTED_SPLASH_POTION, Items.DRAGON_BREATH, VVItems.TINTED_LINGERING_POTION)
         }
 
         UseBlockCallback.EVENT.register(::addToCompositeFromCoreItem)
     }
 
-    fun addToCompositeFromCoreItem(player: PlayerEntity, world: World, hand: Hand, hit: BlockHitResult): ActionResult {
-        if (hit.type != HitResult.Type.BLOCK) return ActionResult.PASS
-        val stack = player.getStackInHand(hand)
-        if (!stack.isOf(Items.HEAVY_CORE)) return ActionResult.PASS
+    fun addToCompositeFromCoreItem(player: Player, level: Level, hand: InteractionHand, hit: BlockHitResult): InteractionResult {
+        if (hit.type != HitResult.Type.BLOCK) return InteractionResult.PASS
+        val stack = player.getItemInHand(hand)
+        if (!stack.`is`(Items.HEAVY_CORE)) return InteractionResult.PASS
 
-        val hitState = world.getBlockState(hit.blockPos)
-        if (hitState.isOf(VVBlocks.HEAVY_CUBE)) {
-            val corner = POS_TO_CORNER[getCornerPosition(hit).add(hit.side.getOffset().map { it * -2 })]
-            if (corner != null && !hitState.get(corner)) return ActionResult.PASS
+        val hitState = level.getBlockState(hit.blockPos)
+        if (hitState.`is`(VVBlocks.HEAVY_CUBE)) {
+            val corner = POS_TO_CORNER[getCornerPosition(hit).add(hit.direction.getOffset().map { it * -2 })]
+            if (corner != null && !hitState.getValue(corner)) return InteractionResult.PASS
         }
 
-        val pos = hit.blockPos.offset(hit.side)
-        val state = world.getBlockState(pos)
-        if (!state.isOf(VVBlocks.HEAVY_CUBE)) return ActionResult.PASS
-        if (!world.canPlayerModifyAt(player, pos)) return ActionResult.PASS
+        val pos = hit.blockPos.relative(hit.direction)
+        val state = level.getBlockState(pos)
+        if (!state.`is`(VVBlocks.HEAVY_CUBE)) return InteractionResult.PASS
+        if (!level.mayInteract(player, pos)) return InteractionResult.PASS
 
-        val clickedPos = getCornerPosition(BlockHitResult(hit.pos, hit.side.opposite, pos, hit.isInsideBlock))
-        val cornerToBeAdded = POS_TO_CORNER[clickedPos] ?: return ActionResult.PASS
-        addToComposite(state, cornerToBeAdded, world, pos, player, stack)
-        return ActionResult.SUCCESS
+        val clickedPos = getCornerPosition(BlockHitResult(hit.location, hit.direction.opposite, pos, hit.isInside))
+        val cornerToBeAdded = POS_TO_CORNER[clickedPos] ?: return InteractionResult.PASS
+        addToComposite(state, cornerToBeAdded, level, pos, player, stack)
+        return InteractionResult.SUCCESS
     }
 }

@@ -1,5 +1,6 @@
 package org.teamvoided.voidlib.helpers
 
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.phys.Vec3
 
-fun Vec3d.map(func: (Double) -> Double): Vec3d = Vec3d(func(this.x), func(this.y), func(this.z))
+
+fun Vec3.map(func: (Double) -> Double): Vec3 = Vec3(func(this.x), func(this.y), func(this.z))

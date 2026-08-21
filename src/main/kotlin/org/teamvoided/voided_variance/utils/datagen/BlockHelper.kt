@@ -1,16 +1,12 @@
-@file:Suppress("unused")
 
 package org.teamvoided.voided_variance.utils.datagen
 
-import net.minecraft.block.AbstractBlock
-import net.minecraft.block.AbstractBlock.Settings.copy
-import net.minecraft.block.Block
-import net.minecraft.block.piston.PistonBehavior
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockBehaviour.Properties.ofFullCopy
 import org.teamvoided.voided_variance.block.*
 
 val CUTOUT_BLOCKS = mutableSetOf<Block>()
 
-val SWORDABLE = mutableSetOf<Block>()
 val PICKAXABLE = mutableSetOf<Block>()
 val AXABLE = mutableSetOf<Block>()
 val SHOVELABLE = mutableSetOf<Block>()
@@ -29,10 +25,6 @@ fun Block.cutout(): Block {
     return this
 }
 
-fun Block.sword(): Block {
-    SWORDABLE.add(this)
-    return this
-}
 
 fun Block.pickaxe(): Block {
     PICKAXABLE.add(this)
@@ -49,20 +41,6 @@ fun Block.shovel(): Block {
     return this
 }
 
-fun Block.hoe(): Block {
-    HOEABLE.add(this)
-    return this
-}
-
-fun Block.needsStone(): Block {
-    NEEDS_STONE.add(this)
-    return this
-}
-
-fun Block.needsIron(): Block {
-    NEEDS_IRON.add(this)
-    return this
-}
 
 fun Block.needsDiamond(): Block {
     NEEDS_DIAMOND.add(this)
@@ -70,24 +48,23 @@ fun Block.needsDiamond(): Block {
 }
 
 fun Block.toStairs(): Block {
-    val block = VStairsBlock(this, copy(this))
+    val block = VStairsBlock(this, ofFullCopy(this))
     STAIRS.add(block)
     return block
 }
 
 fun Block.toSlab(): Block {
-    val block = VSlabBlock(this, copy(this))
+    val block = VSlabBlock(this, ofFullCopy(this))
     SLABS.add(block)
     return block
 }
 
 fun Block.toWall(): Block {
-    val block = VWallBlock(this, copy(this))
+    val block = VWallBlock(this, ofFullCopy(this))
     WALLS.add(block)
     return block
 }
 
-fun AbstractBlock.Settings.block(): AbstractBlock.Settings = this.pistonBehavior(PistonBehavior.BLOCK)
 
 fun Block.wall(): Block {
     WALLS.add(this)

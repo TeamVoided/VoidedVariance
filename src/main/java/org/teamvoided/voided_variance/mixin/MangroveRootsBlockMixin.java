@@ -1,48 +1,55 @@
 package org.teamvoided.voided_variance.mixin;
 
-import net.minecraft.block.*;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.math.Direction;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MangroveRootsBlock.class)
-public class MangroveRootsBlockMixin extends Block implements Waterloggable {
+public class MangroveRootsBlockMixin extends Block implements SimpleWaterloggedBlock {
 
-    public MangroveRootsBlockMixin(Settings settings) {
-        super(settings);
+    @Unique
+    private static final EnumProperty<Direction.Axis> dnd$AXIS = BlockStateProperties.AXIS;
+
+    public MangroveRootsBlockMixin(Properties properties) {
+        super(properties);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void addDefaultState(Settings settings, CallbackInfo ci) {
-        this.setDefaultState(this.getDefaultState().with(Properties.AXIS, Direction.Axis.Y));
+    public void addDefaultState(Properties settings, CallbackInfo ci) {
+        registerDefaultState(defaultBlockState().setValue(dnd$AXIS, Direction.Axis.Y));
     }
 
-    @Inject(method = "isSideInvisible", at = @At("HEAD"), cancellable = true)
-    public void addDirectionality(BlockState state, BlockState stateFrom, Direction direction, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(stateFrom.isOf(Blocks.MANGROVE_ROOTS) && direction.getAxis() == state.get(Properties.AXIS));
+    @ModifyReturnValue(method = "skipRendering", at = @At("RETURN"))
+    public boolean addDirectionality(boolean original, BlockState state, BlockState stateFrom, Direction direction) {
+        return stateFrom.is(Blocks.MANGROVE_ROOTS) && direction.getAxis() == state.getValue(dnd$AXIS);
     }
 
-    @Inject(method = "getPlacementState", at = @At("RETURN"), cancellable = true)
-    public void addDirectionalPlacement(ItemPlacementContext ctx, CallbackInfoReturnable<BlockState> cir) {
-        var original = cir.getReturnValue();
-        if (original == null) return;
-        cir.setReturnValue(original.with(Properties.AXIS, ctx.getSide().getAxis()));
+    @ModifyReturnValue(method = "getStateForPlacement", at = @At("RETURN"))
+    public BlockState addDirectionalPlacement(BlockState original, BlockPlaceContext ctx) {
+        if (original == null) {
+            return null;
+        }
+        return original.setValue(dnd$AXIS, ctx.getClickedFace().getAxis());
     }
 
     @Override
-    protected BlockState rotate(BlockState state, BlockRotation rotation) {
-        return PillarBlock.changeRotation(state, rotation);
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        return RotatedPillarBlock.rotatePillar(state, rotation);
     }
 
-    @Inject(method = "appendProperties", at = @At("TAIL"))
-    public void addDirectionalSideInvisible(StateManager.Builder<Block, BlockState> builder, CallbackInfo ci) {
-        builder.add(Properties.AXIS);
+    @Inject(method = "createBlockStateDefinition", at = @At("TAIL"))
+    public void addDirectionalSideInvisible(StateDefinition.Builder<Block, BlockState> builder, CallbackInfo ci) {
+        builder.add(dnd$AXIS);
     }
+
 }

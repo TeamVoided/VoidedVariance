@@ -3,82 +3,88 @@ package org.teamvoided.voided_variance.recipe
 import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import net.minecraft.item.ItemStack
-import net.minecraft.network.RegistryByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.recipe.*
-import net.minecraft.registry.HolderLookup
-import net.minecraft.util.collection.DefaultedList
-import net.minecraft.world.World
+import net.minecraft.core.HolderLookup
+import net.minecraft.core.NonNullList
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.crafting.*
+import net.minecraft.world.level.Level
 import org.teamvoided.voided_variance.init.VVRecipeTypes
 import java.util.*
 
 class StrictShapedRecipe(
     group: String,
-    category: CraftingCategory,
+    category: CraftingBookCategory,
     val strictPattern: StrictShapedRecipePattern,
     val strictResult: ItemStack,
     showNotification: Boolean = true,
 ) : ShapedRecipe(
     group, category,
-    ShapedRecipePattern(1, 1, DefaultedList.ofSize(1), Optional.empty()),
+    ShapedRecipePattern(1, 1, NonNullList.createWithCapacity(1), Optional.empty()),
     strictResult, showNotification
 ) {
+
     override fun getSerializer() = VVRecipeTypes.STRICT_CRAFTING_SHAPED
-    override fun getResult(provider: HolderLookup.Provider): ItemStack = this.strictResult
-    override fun getIngredients(): DefaultedList<Ingredient> = this.strictPattern.ingredients
-    override fun fits(width: Int, height: Int): Boolean =
-        width >= this.strictPattern.width && height >= this.strictPattern.height
 
-    override fun matches(craftingRecipeInput: CraftingRecipeInput, world: World): Boolean =
-        this.strictPattern.matches(craftingRecipeInput)
+    override fun getResultItem(lookup: HolderLookup.Provider): ItemStack = strictResult
 
-    override fun craft(craftingRecipeInput: CraftingRecipeInput, provider: HolderLookup.Provider): ItemStack =
-        this.getResult(provider).copy()
+    override fun getIngredients(): NonNullList<Ingredient> = strictPattern.ingredients
 
-    override fun getWidth(): Int = this.strictPattern.width
-    override fun getHeight(): Int = this.strictPattern.height
+    override fun canCraftInDimensions(width: Int, height: Int): Boolean {
+        return width >= getWidth() && height >= getHeight()
+    }
 
+    override fun matches(input: CraftingInput, world: Level): Boolean {
+        return strictPattern.matches(input)
+    }
 
-    override fun isEmpty(): Boolean {
-        val list = ingredients
-        return list.isEmpty() || list.stream()
-            .filter { !it.isEmpty }
-            .anyMatch { it.getMatchingStacks().size == 0 }
+    override fun assemble(input: CraftingInput, lookup: HolderLookup.Provider): ItemStack {
+        return getResultItem(lookup).copy()
+    }
+
+    override fun getWidth(): Int = strictPattern.width
+
+    override fun getHeight(): Int = strictPattern.height
+
+    override fun isIncomplete(): Boolean {
+        return ingredients.isEmpty() || ingredients.stream().filter { !it.isEmpty }.anyMatch { it.getItems().size == 0 }
     }
 
     class Serializer : RecipeSerializer<StrictShapedRecipe> {
-        override fun getCodec(): MapCodec<StrictShapedRecipe> = CODEC
-        override fun getPacketCodec(): PacketCodec<RegistryByteBuf, StrictShapedRecipe> = PACKET_CODEC
+
+        override fun codec(): MapCodec<StrictShapedRecipe> = CODEC
+
+        override fun streamCodec(): StreamCodec<RegistryFriendlyByteBuf, StrictShapedRecipe> = PACKET_CODEC
 
         companion object {
-            val CODEC: MapCodec<StrictShapedRecipe> = RecordCodecBuilder.mapCodec<StrictShapedRecipe> { instance ->
-                instance.group<String, CraftingCategory, StrictShapedRecipePattern, ItemStack, Boolean>(
-                    Codec.STRING.optionalFieldOf("group", "").forGetter<StrictShapedRecipe> { it.group },
-                    CraftingCategory.CODEC.fieldOf("category").orElse(CraftingCategory.MISC)
-                        .forGetter<StrictShapedRecipe> { it.category },
-                    StrictShapedRecipePattern.CODEC.forGetter<StrictShapedRecipe> { it.strictPattern },
-                    ItemStack.field_51397.fieldOf("result").forGetter<StrictShapedRecipe> { it.strictResult },
+            val CODEC: MapCodec<StrictShapedRecipe> = RecordCodecBuilder.mapCodec { instance ->
+                instance.group(
+                    Codec.STRING.optionalFieldOf("group", "").forGetter { it.group },
+                    CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC)
+                        .forGetter { it.category() },
+                    StrictShapedRecipePattern.CODEC.forGetter { it.strictPattern },
+                    ItemStack.STRICT_CODEC.fieldOf("result").forGetter { it.strictResult },
                     Codec.BOOL.optionalFieldOf("show_notification", true)
-                        .forGetter<StrictShapedRecipe> { it.showNotification() }
-                ).apply<StrictShapedRecipe>(instance, ::StrictShapedRecipe)
+                        .forGetter { it.showNotification() }
+                ).apply(instance, ::StrictShapedRecipe)
             }
-            val PACKET_CODEC: PacketCodec<RegistryByteBuf, StrictShapedRecipe> = PacketCodec.create(::write, ::read)
+            val PACKET_CODEC: StreamCodec<RegistryFriendlyByteBuf, StrictShapedRecipe> = StreamCodec.of(::write, ::read)
 
-            private fun read(buf: RegistryByteBuf): StrictShapedRecipe {
-                val string = buf.readString()
-                val craftingCategory = buf.readEnumConstant(CraftingCategory::class.java)
+            private fun read(buf: RegistryFriendlyByteBuf): StrictShapedRecipe {
+                val string = buf.readUtf()
+                val craftingCategory = buf.readEnum(CraftingBookCategory::class.java)
                 val strictShapedRecipePattern = StrictShapedRecipePattern.PACKET_CODEC.decode(buf)
-                val itemStack = ItemStack.PACKET_CODEC.decode(buf)
-                val bl = buf.readBoolean()
-                return StrictShapedRecipe(string, craftingCategory, strictShapedRecipePattern, itemStack, bl)
+                val itemStack = ItemStack.STREAM_CODEC.decode(buf)
+                val showNotification = buf.readBoolean()
+                return StrictShapedRecipe(string, craftingCategory, strictShapedRecipePattern, itemStack, showNotification)
             }
 
-            private fun write(buf: RegistryByteBuf, recipe: StrictShapedRecipe) {
-                buf.writeString(recipe.group)
-                buf.writeEnumConstant(recipe.category)
+            private fun write(buf: RegistryFriendlyByteBuf, recipe: StrictShapedRecipe) {
+                buf.writeUtf(recipe.group)
+                buf.writeEnum(recipe.category())
                 StrictShapedRecipePattern.PACKET_CODEC.encode(buf, recipe.strictPattern)
-                ItemStack.PACKET_CODEC.encode(buf, recipe.strictResult)
+                ItemStack.STREAM_CODEC.encode(buf, recipe.strictResult)
                 buf.writeBoolean(recipe.showNotification())
             }
         }

@@ -1,123 +1,123 @@
 package org.teamvoided.voided_variance.utils.datagen
 
-import net.minecraft.data.server.RecipesProvider.*
-import net.minecraft.data.server.recipe.RecipeExporter
-import net.minecraft.data.server.recipe.RecipeJsonFactory
-import net.minecraft.data.server.recipe.ShapedRecipeJsonFactory
-import net.minecraft.data.server.recipe.ShapelessRecipeJsonFactory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemConvertible
-import net.minecraft.item.Items
-import net.minecraft.recipe.RecipeCategory
-import net.minecraft.registry.tag.TagKey
+import net.minecraft.data.recipes.RecipeBuilder
+import net.minecraft.data.recipes.RecipeCategory
+import net.minecraft.data.recipes.RecipeOutput
+import net.minecraft.data.recipes.RecipeProvider.getHasName
+import net.minecraft.data.recipes.RecipeProvider.has
+import net.minecraft.data.recipes.RecipeProvider.stonecutterResultFromBase
+import net.minecraft.data.recipes.ShapedRecipeBuilder
+import net.minecraft.data.recipes.ShapelessRecipeBuilder
+import net.minecraft.tags.TagKey
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.ItemLike
 
-fun RecipeExporter.compositeBlock(full: ItemConvertible, part: ItemConvertible) {
-    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, full, 1)
+
+fun RecipeOutput.compositeBlock(full: ItemLike, part: ItemLike) {
+    ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, full, 1)
         .pattern("###")
         .pattern("# #")
         .pattern("###")
-        .ingredient('#', part)
-        .criterion(part)
-        .offerTo(this)
-    ShapelessRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, part, 8)
-        .ingredient(full)
-        .criterion(full)
-        .offerTo(this)
+        .define('#', part)
+        .unlockedBy(part)
+        .save(this)
+    ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, part, 8)
+        .requires(full)
+        .unlockedBy(full)
+        .save(this)
 }
 
 
-fun RecipeExporter.stonecutAllFrom(input: ItemConvertible, vararg results: ItemConvertible) {
-    for (result in results) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, result, input, 1)
+fun RecipeOutput.stonecutAllFrom(input: ItemLike, vararg results: ItemLike) {
+    for (result in results) stonecutterResultFromBase(this, RecipeCategory.BUILDING_BLOCKS, result, input, 1)
 }
 
-fun RecipeExporter.stonecutAllFrom(inputs: List<ItemConvertible>, vararg results: ItemConvertible) {
+fun RecipeOutput.stonecutAllFrom(inputs: List<ItemLike>, vararg results: ItemLike) {
     for (input in inputs) this.stonecutAllFrom(input, *results)
 }
 
-fun RecipeExporter.stonecutting(output: ItemConvertible, input: ItemConvertible, count: Int) =
-    createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, output, input, count)
+fun RecipeOutput.stonecutting(output: ItemLike, input: ItemLike, count: Int) =
+    stonecutterResultFromBase(this, RecipeCategory.BUILDING_BLOCKS, output, input, count)
 
-fun RecipeExporter.stonecutting(output: ItemConvertible, count: Int, vararg inputs: ItemConvertible) {
+fun RecipeOutput.stonecutting(output: ItemLike, count: Int, vararg inputs: ItemLike) {
     for (input in inputs) this.stonecutting(output, input, count)
 }
 
-fun RecipeExporter.create2x2(output: ItemConvertible, input: ItemConvertible, count: Int = 4) =
-    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, output, count)
+fun RecipeOutput.create2x2(output: ItemLike, input: ItemLike, count: Int = 4) =
+    ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, output, count)
         .pattern("##")
         .pattern("##")
-        .ingredient('#', input)
-        .criterion(input)
-        .offerTo(this)
+        .define('#', input)
+        .unlockedBy(input)
+        .save(this)
 
 
-fun RecipeExporter.createFence(
-    fence: ItemConvertible, block: ItemConvertible, item: ItemConvertible,
+fun RecipeOutput.createFence(
+    fence: ItemLike, block: ItemLike, item: ItemLike,
     stone: Boolean = false
 ) {
-    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, fence, if (stone) 6 else 3)
+    ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, fence, if (stone) 6 else 3)
         .pattern("#-#")
         .pattern("#-#")
-        .ingredient('#', block)
-        .ingredient('-', item)
-        .criterion(item)
-        .offerTo(this)
-    if (stone) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, fence, block, 1)
+        .define('#', block)
+        .define('-', item)
+        .unlockedBy(item)
+        .save(this)
+    if (stone) stonecutterResultFromBase(this, RecipeCategory.BUILDING_BLOCKS, fence, block, 1)
 }
 
-fun RecipeExporter.createSlab(
-    slab: ItemConvertible, block: ItemConvertible,
+fun RecipeOutput.createSlab(
+    slab: ItemLike, block: ItemLike,
     stone: Boolean = false
 ) {
-    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, slab, 6)
+    ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, slab, 6)
         .pattern("###")
-        .ingredient('#', block)
-        .criterion(block)
-        .offerTo(this)
-    if (stone) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, slab, block, 2)
+        .define('#', block)
+        .unlockedBy(block)
+        .save(this)
+    if (stone) stonecutterResultFromBase(this, RecipeCategory.BUILDING_BLOCKS, slab, block, 2)
 }
 
-fun RecipeExporter.createStair(
-    stair: ItemConvertible, block: ItemConvertible,
+fun RecipeOutput.createStair(
+    stair: ItemLike, block: ItemLike,
     stone: Boolean = false
 ) {
-    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, stair, 4)
+    ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, stair, 4)
         .pattern("#  ")
         .pattern("## ")
         .pattern("###")
-        .ingredient('#', block)
-        .criterion(block)
-        .offerTo(this)
-    if (stone) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, stair, block, 1)
+        .define('#', block)
+        .unlockedBy(block)
+        .save(this)
+    if (stone) stonecutterResultFromBase(this, RecipeCategory.BUILDING_BLOCKS, stair, block, 1)
 }
 
-fun RecipeExporter.createWall(
-    wall: ItemConvertible, block: ItemConvertible,
+fun RecipeOutput.createWall(
+    wall: ItemLike, block: ItemLike,
     stone: Boolean = false
 ) {
-    ShapedRecipeJsonFactory.create(RecipeCategory.BUILDING_BLOCKS, wall, 6)
+    ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, wall, 6)
         .pattern("###")
         .pattern("###")
-        .ingredient('#', block)
-        .criterion(block)
-        .offerTo(this)
-    if (stone) createStonecuttingRecipe(this, RecipeCategory.BUILDING_BLOCKS, wall, block, 1)
+        .define('#', block)
+        .unlockedBy(block)
+        .save(this)
+    if (stone) stonecutterResultFromBase(this, RecipeCategory.BUILDING_BLOCKS, wall, block, 1)
 }
 
-fun RecipeExporter.lantern(lantern: ItemConvertible, torch: ItemConvertible) {
-    ShapedRecipeJsonFactory.create(RecipeCategory.DECORATIONS, lantern)
+fun RecipeOutput.lantern(lantern: ItemLike, torch: ItemLike) {
+    ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, lantern)
         .pattern("XXX")
         .pattern("X#X")
         .pattern("XXX")
-        .ingredient('#', torch)
-        .ingredient('X', Items.IRON_NUGGET)
-        .criterion(Items.IRON_NUGGET)
-        .criterion(Items.IRON_INGOT)
-        .offerTo(this)
+        .define('#', torch)
+        .define('X', Items.IRON_NUGGET)
+        .unlockedBy(Items.IRON_NUGGET)
+        .unlockedBy(Items.IRON_INGOT)
+        .save(this)
 }
 
 
-fun RecipeJsonFactory.criterion(item: ItemConvertible): RecipeJsonFactory =
-    this.criterion(hasItem(item), conditionsFromItem(item))
-
-fun RecipeJsonFactory.criterion(tag: TagKey<Item>): RecipeJsonFactory =
-    this.criterion("has_${tag.id.path}", conditionsFromTag(tag))
+fun RecipeBuilder.unlockedBy(item: ItemLike): RecipeBuilder = unlockedBy(getHasName(item), has(item))
+fun RecipeBuilder.unlockedBy(tag: TagKey<Item>): RecipeBuilder = unlockedBy("has_${tag.location.path}", has(tag))

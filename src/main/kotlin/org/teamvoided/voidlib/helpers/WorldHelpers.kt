@@ -1,18 +1,17 @@
 package org.teamvoided.voidlib.helpers
 
-import net.minecraft.block.BlockState
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvent
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-
-fun World.playSound(pos: BlockPos, sound: SoundEvent, category: SoundCategory, volume: Float, pitch: Float) =
-    this.playSound(pos, sound, category, volume, pitch, false)
+import net.minecraft.core.BlockPos
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.sounds.SoundSource
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.state.BlockState
 
 
-fun World.playBlockSound(pos: BlockPos, sound: SoundEvent, volume: Float, pitch: Float) =
-    this.playSound(pos, sound, SoundCategory.BLOCKS, volume, pitch, false)
+fun Level.playBlockSound(pos: BlockPos, sound: SoundEvent, volume: Float, pitch: Float) {
+    playLocalSound(pos, sound, SoundSource.BLOCKS, volume, pitch, false)
+}
 
-fun World.scheduleFluidTick(pos: BlockPos, state: BlockState) =
-    this.scheduleFluidTick(pos, state.fluidState.fluid, state.fluidState.fluid.getTickRate(this))
+fun Level.scheduleFluidTick(pos: BlockPos, state: BlockState) {
+    scheduleTick(pos, state.fluidState.type, state.fluidState.type.getTickDelay(this))
+}
 

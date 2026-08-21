@@ -1,117 +1,57 @@
 package org.teamvoided.voided_variance.block
 
 import net.fabricmc.fabric.api.block.BlockPickInteractionAware
-import net.minecraft.block.*
-import net.minecraft.client.item.TooltipConfig
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.BlockStateComponent
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemPlacementContext
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.sound.SoundEvents
-import net.minecraft.state.StateManager
-import net.minecraft.state.property.BooleanProperty
-import net.minecraft.state.property.Properties.WATERLOGGED
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Formatting
-import net.minecraft.util.Hand
-import net.minecraft.util.ItemInteractionResult
-import net.minecraft.util.hit.BlockHitResult
-import net.minecraft.util.hit.HitResult
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
-import net.minecraft.util.math.Vec3d
-import net.minecraft.util.shape.VoxelShape
-import net.minecraft.util.shape.VoxelShapes
-import net.minecraft.world.BlockView
-import net.minecraft.world.World
+import net.minecraft.ChatFormatting
+import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
+import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.Component
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.ItemInteractionResult
+import net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.world.item.component.BlockItemStateProperties
+import net.minecraft.world.item.context.BlockPlaceContext
+import net.minecraft.world.level.BlockGetter
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.HeavyCoreBlock
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.state.StateDefinition
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.world.level.block.state.properties.BooleanProperty
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.HitResult
+import net.minecraft.world.phys.Vec3
+import net.minecraft.world.phys.shapes.CollisionContext
+import net.minecraft.world.phys.shapes.Shapes
+import net.minecraft.world.phys.shapes.VoxelShape
 import org.teamvoided.voided_variance.utils.HEAVY_CUBE_TOOLTIP
+import org.teamvoided.voided_variance.utils.giveItem
 import org.teamvoided.voidlib.helpers.map
 import org.teamvoided.voidlib.helpers.playBlockSound
 import org.teamvoided.voidlib.helpers.scheduleFluidTick
-import net.minecraft.util.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION as PASS_TO_DEFAULT
 
-class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickInteractionAware {
+class CompositeBlock(properties: Properties) : HeavyCoreBlock(properties), BlockPickInteractionAware {
 
     init {
-        defaultState = defaultState
-            .with(UPPER_NORTH_EAST, true).with(UPPER_NORTH_WEST, true)
-            .with(UPPER_SOUTH_EAST, true).with(UPPER_SOUTH_WEST, true)
-            .with(LOWER_NORTH_EAST, true).with(LOWER_NORTH_WEST, true)
-            .with(LOWER_SOUTH_EAST, true).with(LOWER_SOUTH_WEST, true)
+        registerDefaultState(
+            defaultBlockState()
+                .setValue(UPPER_NORTH_EAST, true).setValue(UPPER_NORTH_WEST, true)
+                .setValue(UPPER_SOUTH_EAST, true).setValue(UPPER_SOUTH_WEST, true)
+                .setValue(LOWER_NORTH_EAST, true).setValue(LOWER_NORTH_WEST, true)
+                .setValue(LOWER_SOUTH_EAST, true).setValue(LOWER_SOUTH_WEST, true)
+        )
     }
 
-    override fun onUse(state: BlockState, world: World, pos: BlockPos, entity: PlayerEntity, hitResult: BlockHitResult)
-            : ActionResult {
-        val mainStack = entity.getStackInHand(Hand.MAIN_HAND)
-        val offStack = entity.getStackInHand(Hand.OFF_HAND)
-        if (entity.isSneaking && mainStack.isEmpty && offStack.isEmpty && hitResult.type == HitResult.Type.BLOCK) {
-            val cornerProperty = POS_TO_CORNER[getCornerPosition(hitResult)]
-            if (cornerProperty != null && state.get(cornerProperty)) {
-                val newState = state.with(cornerProperty, false)
-                world.setBlockState(pos, newState)
-                if (state.get(WATERLOGGED)) world.scheduleFluidTick(pos, state)
-                if (!(entity.isCreative && entity.inventory.contains(Items.HEAVY_CORE.defaultStack))) {
-                    entity.giveItemStack(ItemStack(Items.HEAVY_CORE))
-                }
-                if (!newState.hasAnyCorners()) {
-                    val replaceState =
-                        if (newState.get(WATERLOGGED)) newState.fluidState.blockState else Blocks.AIR.defaultState
-                    world.setBlockState(pos, replaceState)
-                }
-                world.playBlockSound(pos, SoundEvents.BLOCK_HEAVY_CORE_BREAK, 0.8f, 1.0f)
-                return ActionResult.SUCCESS
-            }
-        }
-        return super.onUse(state, world, pos, entity, hitResult)
-    }
-
-    override fun onInteract(
-        stack: ItemStack, state: BlockState, world: World,
-        pos: BlockPos, entity: PlayerEntity, hand: Hand, hitResult: BlockHitResult,
-    ): ItemInteractionResult {
-        if (hitResult.type != HitResult.Type.BLOCK || !stack.isOf(Items.HEAVY_CORE) || state.isFull())
-            return super.onInteract(stack, state, world, pos, entity, hand, hitResult)
-
-        val clickedPos = getCornerPosition(hitResult).add(hitResult.side.getOffset().map { it * -2 })
-        val cornerToBeAdded = POS_TO_CORNER[clickedPos] ?: return PASS_TO_DEFAULT
-
-        addToComposite(state, cornerToBeAdded, world, pos, entity, stack)
-        return ItemInteractionResult.SUCCESS
-    }
-
-    override fun getPlacementState(ctx: ItemPlacementContext): BlockState? {
-        var state = super.getPlacementState(ctx) ?: return null
-        ctx.stack.get(DataComponentTypes.BLOCK_STATE)?.let { state = it.apply(state) }
-        return state
-    }
-
-    override fun getPickedStack(
-        state: BlockState, world: BlockView, pos: BlockPos, player: PlayerEntity, result: HitResult
-    ): ItemStack {
-        val stack = state.block.asItem().defaultStack
-        if (state.block !is CompositeBlock || stack.isEmpty || !player.isCreative || !player.isSneaking || state.isFull()) return stack
-        var data = stack.getOrDefault(DataComponentTypes.BLOCK_STATE, BlockStateComponent(mapOf()))
-        for (property in PROPS) data = data.with(property, state)
-        stack.set(DataComponentTypes.BLOCK_STATE, data)
-        stack.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-        return stack
-    }
-
-    override fun appendTooltip(
-        stack: ItemStack, tooltipContext: Item.TooltipContext, tooltip: MutableList<Text>, options: TooltipConfig
-    ) {
-        super.appendTooltip(stack, tooltipContext, tooltip, options)
-        stack.get(DataComponentTypes.BLOCK_STATE)?.let {
-            tooltip.add(Text.translatable(HEAVY_CUBE_TOOLTIP).formatted(Formatting.RED))
-        }
-    }
-
-    override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
-        super.appendProperties(builder)
+    override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
+        super.createBlockStateDefinition(builder)
         builder.add(
             UPPER_NORTH_WEST, UPPER_NORTH_EAST,
             UPPER_SOUTH_WEST, UPPER_SOUTH_EAST,
@@ -120,69 +60,149 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
         )
     }
 
-    override fun getOutlineShape(
-        state: BlockState, world: BlockView, pos: BlockPos, context: ShapeContext
-    ): VoxelShape {
+    override fun useWithoutItem(
+        state: BlockState, level: Level, pos: BlockPos, player: Player, hit: BlockHitResult,
+    ): InteractionResult {
+        val mainStack = player.getItemInHand(InteractionHand.MAIN_HAND)
+        val offStack = player.getItemInHand(InteractionHand.OFF_HAND)
+        if (player.isShiftKeyDown && mainStack.isEmpty && offStack.isEmpty && hit.type == HitResult.Type.BLOCK) {
+            val corner = POS_TO_CORNER[getCornerPosition(hit)]
+            if (corner != null && state.getValue(corner)) {
+                val newState = state.setValue(corner, false)
+                level.setBlockAndUpdate(pos, newState)
+                if (state.getValue(WATERLOGGED)) level.scheduleFluidTick(pos, state)
+                if (!(player.isCreative && player.inventory.contains(Items.HEAVY_CORE.defaultInstance))) {
+                    player.giveItem(ItemStack(Items.HEAVY_CORE))
+                }
+                if (!newState.hasAnyCorners()) {
+                    if (newState.getValue(WATERLOGGED))
+                        level.setBlockAndUpdate(pos, newState.fluidState.createLegacyBlock())
+                    else
+                        level.removeBlock(pos, false)
+                }
+                level.playBlockSound(pos, SoundEvents.HEAVY_CORE_BREAK, 0.8f, 1.0f)
+                return InteractionResult.SUCCESS
+            }
+        }
+        return super.useWithoutItem(state, level, pos, player, hit)
+    }
+
+    override fun useItemOn(
+        stack: ItemStack, state: BlockState, level: Level,
+        pos: BlockPos, player: Player, hand: InteractionHand, hit: BlockHitResult,
+    ): ItemInteractionResult {
+        if (hit.type != HitResult.Type.BLOCK || !stack.`is`(Items.HEAVY_CORE) || state.isFull())
+            return super.useItemOn(stack, state, level, pos, player, hand, hit)
+
+        val clickedPos = getCornerPosition(hit).add(hit.direction.getOffset().map { it * -2 })
+        val cornerToBeAdded = POS_TO_CORNER[clickedPos] ?: return PASS_TO_DEFAULT_BLOCK_INTERACTION
+
+        addToComposite(state, cornerToBeAdded, level, pos, player, stack)
+        return ItemInteractionResult.SUCCESS
+    }
+
+    override fun getStateForPlacement(ctx: BlockPlaceContext): BlockState? {
+        var state = super.getStateForPlacement(ctx) ?: return null
+        ctx.itemInHand?.get(DataComponents.BLOCK_STATE)?.let {
+            state = it.apply(state)
+        }
+        return state
+    }
+
+    override fun getPickedStack(
+        state: BlockState, level: BlockGetter, pos: BlockPos, player: Player, hit: HitResult,
+    ): ItemStack {
+        val stack = state.block.asItem().defaultInstance
+        if (state.block !is CompositeBlock || stack.isEmpty || !player.isCreative || !player.isShiftKeyDown || state.isFull()) {
+            return stack
+        }
+
+        var data = stack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties(mapOf()))
+        for (property in PROPS) {
+            data = data.with(property, state)
+        }
+        stack.set(DataComponents.BLOCK_STATE, data)
+        stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+        return stack
+    }
+
+    override fun appendHoverText(
+        stack: ItemStack, ctx: Item.TooltipContext, tooltip: MutableList<Component>, flag: TooltipFlag,
+    ) {
+        super.appendHoverText(stack, ctx, tooltip, flag)
+        stack.get(DataComponents.BLOCK_STATE)?.let {
+            tooltip.add(Component.translatable(HEAVY_CUBE_TOOLTIP).withStyle(ChatFormatting.RED))
+        }
+    }
+
+    override fun getShape(state: BlockState, level: BlockGetter, pos: BlockPos, ctx: CollisionContext): VoxelShape {
         val list = mutableListOf<VoxelShape>()
 
-        if (state.get(UPPER_NORTH_EAST)) list.add(UPPER_TOP_RIGHT_SHAPE)
-        if (state.get(UPPER_NORTH_WEST)) list.add(UPPER_TOP_LEFT_SHAPE)
-        if (state.get(UPPER_SOUTH_EAST)) list.add(UPPER_BOTTOM_RIGHT_SHAPE)
-        if (state.get(UPPER_SOUTH_WEST)) list.add(UPPER_BOTTOM_LEFT_SHAPE)
+        if (state.getValue(UPPER_NORTH_EAST)) list.add(UPPER_TOP_RIGHT_SHAPE)
+        if (state.getValue(UPPER_NORTH_WEST)) list.add(UPPER_TOP_LEFT_SHAPE)
+        if (state.getValue(UPPER_SOUTH_EAST)) list.add(UPPER_BOTTOM_RIGHT_SHAPE)
+        if (state.getValue(UPPER_SOUTH_WEST)) list.add(UPPER_BOTTOM_LEFT_SHAPE)
 
-        if (state.get(LOWER_NORTH_EAST)) list.add(LOWER_TOP_RIGHT_SHAPE)
-        if (state.get(LOWER_NORTH_WEST)) list.add(LOWER_TOP_LEFT_SHAPE)
-        if (state.get(LOWER_SOUTH_EAST)) list.add(LOWER_BOTTOM_RIGHT_SHAPE)
-        if (state.get(LOWER_SOUTH_WEST)) list.add(LOWER_BOTTOM_LEFT_SHAPE)
+        if (state.getValue(LOWER_NORTH_EAST)) list.add(LOWER_TOP_RIGHT_SHAPE)
+        if (state.getValue(LOWER_NORTH_WEST)) list.add(LOWER_TOP_LEFT_SHAPE)
+        if (state.getValue(LOWER_SOUTH_EAST)) list.add(LOWER_BOTTOM_RIGHT_SHAPE)
+        if (state.getValue(LOWER_SOUTH_WEST)) list.add(LOWER_BOTTOM_LEFT_SHAPE)
 
-        if (list.isEmpty()) return VoxelShapes.fullCube()
+        if (list.isEmpty()) return Shapes.block()
 
-        return VoxelShapes.union(VoxelShapes.empty(), *list.toTypedArray())
+        return Shapes.or(Shapes.empty(), *list.toTypedArray())
     }
 
     companion object {
-        fun getCornerPosition(hitResult: BlockHitResult): Vec3d =
-            hitResult.pos.add(hitResult.side.getOffset())
+
+        val UPPER_NORTH_EAST: BooleanProperty = BooleanProperty.create("upper_north_east")
+        val UPPER_NORTH_WEST: BooleanProperty = BooleanProperty.create("upper_north_west")
+        val UPPER_SOUTH_EAST: BooleanProperty = BooleanProperty.create("upper_south_east")
+        val UPPER_SOUTH_WEST: BooleanProperty = BooleanProperty.create("upper_south_west")
+
+        val LOWER_NORTH_EAST: BooleanProperty = BooleanProperty.create("lower_north_east")
+        val LOWER_NORTH_WEST: BooleanProperty = BooleanProperty.create("lower_north_west")
+        val LOWER_SOUTH_EAST: BooleanProperty = BooleanProperty.create("lower_south_east")
+        val LOWER_SOUTH_WEST: BooleanProperty = BooleanProperty.create("lower_south_west")
+
+        val WATERLOGGED: BooleanProperty = BlockStateProperties.WATERLOGGED
+
+        fun getCornerPosition(hit: BlockHitResult): Vec3 {
+            return hit.location.add(hit.direction.getOffset())
                 .map { it % 1 }
                 .map { if (it < 0) 1 + it else it }
                 .map { if (it < .5) .25 else .75 }
-
-
-        fun addToComposite(
-            state: BlockState, cornerToBeAdded: BooleanProperty, world: World,
-            pos: BlockPos, entity: PlayerEntity, stack: ItemStack,
-        ) {
-            val newState = state.with(cornerToBeAdded, true)
-            pushEntitiesUpBeforeBlockChange(state, newState, world, pos)
-            world.setBlockState(pos, newState)
-
-            if (newState.get(WATERLOGGED)) world.scheduleFluidTick(pos, newState)
-            if (!entity.isCreative) stack.decrement(1)
-            world.playBlockSound(pos, SoundEvents.BLOCK_HEAVY_CORE_PLACE, 0.8f, 1.0f)
         }
 
-        fun BlockState.hasAnyCorners(): Boolean =
-            this.get(UPPER_NORTH_EAST) || this.get(UPPER_NORTH_WEST)
-                    || this.get(UPPER_SOUTH_EAST) || this.get(UPPER_SOUTH_WEST)
-                    || this.get(LOWER_NORTH_EAST) || this.get(LOWER_NORTH_WEST)
-                    || this.get(LOWER_SOUTH_EAST) || this.get(LOWER_SOUTH_WEST)
+        fun addToComposite(
+            state: BlockState, cornerToBeAdded: BooleanProperty, level: Level,
+            pos: BlockPos, player: Player, stack: ItemStack,
+        ) {
+            val newState = state.setValue(cornerToBeAdded, true)
+            pushEntitiesUp(state, newState, level, pos)
+            // TODO use set and fluid tick
+            level.setBlockAndUpdate(pos, newState)
+            if (newState.getValue(WATERLOGGED)) level.scheduleFluidTick(pos, newState)
 
-        fun BlockState.isFull() = block is CompositeBlock &&
-                this.get(UPPER_NORTH_EAST) && this.get(UPPER_NORTH_WEST)
-                && this.get(UPPER_SOUTH_EAST) && this.get(UPPER_SOUTH_WEST)
-                && this.get(LOWER_NORTH_EAST) && this.get(LOWER_NORTH_WEST)
-                && this.get(LOWER_SOUTH_EAST) && this.get(LOWER_SOUTH_WEST)
+            if (!player.isCreative) stack.shrink(1)
+            level.playBlockSound(pos, SoundEvents.HEAVY_CORE_PLACE, 0.8f, 1.0f)
+        }
 
+        fun BlockState.hasAnyCorners(): Boolean {
+            return block is CompositeBlock &&
+                    getValue(UPPER_NORTH_EAST) || getValue(UPPER_NORTH_WEST)
+                    || getValue(UPPER_SOUTH_EAST) || getValue(UPPER_SOUTH_WEST)
+                    || getValue(LOWER_NORTH_EAST) || getValue(LOWER_NORTH_WEST)
+                    || getValue(LOWER_SOUTH_EAST) || getValue(LOWER_SOUTH_WEST)
+        }
 
-        val UPPER_NORTH_EAST: BooleanProperty = BooleanProperty.of("upper_north_east")
-        val UPPER_NORTH_WEST: BooleanProperty = BooleanProperty.of("upper_north_west")
-        val UPPER_SOUTH_EAST: BooleanProperty = BooleanProperty.of("upper_south_east")
-        val UPPER_SOUTH_WEST: BooleanProperty = BooleanProperty.of("upper_south_west")
-
-        val LOWER_NORTH_EAST: BooleanProperty = BooleanProperty.of("lower_north_east")
-        val LOWER_NORTH_WEST: BooleanProperty = BooleanProperty.of("lower_north_west")
-        val LOWER_SOUTH_EAST: BooleanProperty = BooleanProperty.of("lower_south_east")
-        val LOWER_SOUTH_WEST: BooleanProperty = BooleanProperty.of("lower_south_west")
+        fun BlockState.isFull(): Boolean {
+            return block is CompositeBlock &&
+                    getValue(UPPER_NORTH_EAST) && getValue(UPPER_NORTH_WEST)
+                    && getValue(UPPER_SOUTH_EAST) && getValue(UPPER_SOUTH_WEST)
+                    && getValue(LOWER_NORTH_EAST) && getValue(LOWER_NORTH_WEST)
+                    && getValue(LOWER_SOUTH_EAST) && getValue(LOWER_SOUTH_WEST)
+        }
 
         val PROPS = setOf(
             UPPER_NORTH_EAST, UPPER_NORTH_WEST,
@@ -191,37 +211,38 @@ class CompositeBlock(settings: Settings) : HeavyCoreBlock(settings), BlockPickIn
             LOWER_SOUTH_EAST, LOWER_SOUTH_WEST
         )
 
-        val UPPER_TOP_RIGHT_SHAPE: VoxelShape = createCuboidShape(8.0, 8.0, 0.0, 16.0, 16.0, 8.0)
-        val UPPER_TOP_LEFT_SHAPE: VoxelShape = createCuboidShape(0.0, 8.0, 0.0, 8.0, 16.0, 8.0)
-        val UPPER_BOTTOM_RIGHT_SHAPE: VoxelShape = createCuboidShape(8.0, 8.0, 8.0, 16.0, 16.0, 16.0)
-        val UPPER_BOTTOM_LEFT_SHAPE: VoxelShape = createCuboidShape(0.0, 8.0, 8.0, 8.0, 16.0, 16.0)
+        val UPPER_TOP_RIGHT_SHAPE: VoxelShape = box(8.0, 8.0, 0.0, 16.0, 16.0, 8.0)
+        val UPPER_TOP_LEFT_SHAPE: VoxelShape = box(0.0, 8.0, 0.0, 8.0, 16.0, 8.0)
+        val UPPER_BOTTOM_RIGHT_SHAPE: VoxelShape = box(8.0, 8.0, 8.0, 16.0, 16.0, 16.0)
+        val UPPER_BOTTOM_LEFT_SHAPE: VoxelShape = box(0.0, 8.0, 8.0, 8.0, 16.0, 16.0)
 
-        val LOWER_TOP_RIGHT_SHAPE: VoxelShape = createCuboidShape(8.0, 0.0, 0.0, 16.0, 8.0, 8.0)
-        val LOWER_TOP_LEFT_SHAPE: VoxelShape = createCuboidShape(0.0, 0.0, 0.0, 8.0, 8.0, 8.0)
-        val LOWER_BOTTOM_RIGHT_SHAPE: VoxelShape = createCuboidShape(8.0, 0.0, 8.0, 16.0, 8.0, 16.0)
-        val LOWER_BOTTOM_LEFT_SHAPE: VoxelShape = createCuboidShape(0.0, 0.0, 8.0, 8.0, 8.0, 16.0)
+        val LOWER_TOP_RIGHT_SHAPE: VoxelShape = box(8.0, 0.0, 0.0, 16.0, 8.0, 8.0)
+        val LOWER_TOP_LEFT_SHAPE: VoxelShape = box(0.0, 0.0, 0.0, 8.0, 8.0, 8.0)
+        val LOWER_BOTTOM_RIGHT_SHAPE: VoxelShape = box(8.0, 0.0, 8.0, 16.0, 8.0, 16.0)
+        val LOWER_BOTTOM_LEFT_SHAPE: VoxelShape = box(0.0, 0.0, 8.0, 8.0, 8.0, 16.0)
 
         fun Direction.getOffset() = when (this) {
-            Direction.UP -> Vec3d(0.0, -0.25, 0.0)
-            Direction.DOWN -> Vec3d(0.0, 0.25, 0.0)
-            Direction.NORTH -> Vec3d(0.0, 0.0, 0.25)
-            Direction.SOUTH -> Vec3d(0.0, 0.0, -0.25)
-            Direction.WEST -> Vec3d(0.25, 0.0, 0.0)
-            Direction.EAST -> Vec3d(-0.25, 0.0, 0.0)
+            Direction.UP -> Vec3(0.0, -0.25, 0.0)
+            Direction.DOWN -> Vec3(0.0, 0.25, 0.0)
+            Direction.NORTH -> Vec3(0.0, 0.0, 0.25)
+            Direction.SOUTH -> Vec3(0.0, 0.0, -0.25)
+            Direction.WEST -> Vec3(0.25, 0.0, 0.0)
+            Direction.EAST -> Vec3(-0.25, 0.0, 0.0)
         }
 
         val POS_TO_CORNER = mapOf(
-            Vec3d(0.25, 0.25, 0.25) to LOWER_NORTH_WEST,
-            Vec3d(0.75, 0.25, 0.25) to LOWER_NORTH_EAST,
+            Vec3(0.25, 0.25, 0.25) to LOWER_NORTH_WEST,
+            Vec3(0.75, 0.25, 0.25) to LOWER_NORTH_EAST,
 
-            Vec3d(0.25, 0.25, 0.75) to LOWER_SOUTH_WEST,
-            Vec3d(0.75, 0.25, 0.75) to LOWER_SOUTH_EAST,
+            Vec3(0.25, 0.25, 0.75) to LOWER_SOUTH_WEST,
+            Vec3(0.75, 0.25, 0.75) to LOWER_SOUTH_EAST,
 
-            Vec3d(0.25, 0.75, 0.25) to UPPER_NORTH_WEST,
-            Vec3d(0.75, 0.75, 0.25) to UPPER_NORTH_EAST,
+            Vec3(0.25, 0.75, 0.25) to UPPER_NORTH_WEST,
+            Vec3(0.75, 0.75, 0.25) to UPPER_NORTH_EAST,
 
-            Vec3d(0.25, 0.75, 0.75) to UPPER_SOUTH_WEST,
-            Vec3d(0.75, 0.75, 0.75) to UPPER_SOUTH_EAST,
+            Vec3(0.25, 0.75, 0.75) to UPPER_SOUTH_WEST,
+            Vec3(0.75, 0.75, 0.75) to UPPER_SOUTH_EAST,
         )
+
     }
 }

@@ -1,11 +1,14 @@
 package org.teamvoided.voided_variance.init
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
-import net.minecraft.block.Blocks
-import net.minecraft.item.*
-import net.minecraft.registry.Holder
-import net.minecraft.registry.Registries
-import net.minecraft.text.Text
+import net.minecraft.core.Holder
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.chat.Component
+import net.minecraft.world.item.CreativeModeTab
+import net.minecraft.world.item.CreativeModeTabs
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.PotionItem
+import net.minecraft.world.level.block.Blocks
 import org.teamvoided.voided_variance.VoidedVariance.id
 import org.teamvoided.voided_variance.utils.*
 import org.teamvoided.voided_variance.utils.datagen.SLABS
@@ -16,9 +19,9 @@ object VVTabs {
     val VOIDED_VARIANCE = register(
         "voided_variance",
         FabricItemGroup.builder()
-            .icon { VVBlocks.REDSTONE_LANTERN.asItem().defaultStack }
-            .name(Text.translatable("itemGroup.voided_variance.voided_variance"))
-            .entries { params, entries ->
+            .icon { VVBlocks.REDSTONE_LANTERN.asItem().defaultInstance }
+            .title(Component.translatable("itemGroup.voided_variance.voided_variance"))
+            .displayItems { params, entries ->
                 entries.addItem(
                     VVBlocks.BRICK_FENCE,
 
@@ -43,20 +46,19 @@ object VVTabs {
     fun init() {
         if (isDev()) register(
             "vv_debug", FabricItemGroup.builder()
-                .icon { Items.BARRIER.defaultStack }
-                .name(Text.translatable("VV Debug"))
-                .entries { params, entries ->
-                    VVItems.ITEMS.map {
+                .icon { Items.BARRIER.defaultInstance }
+                .title(Component.translatable("VV Debug"))
+                .displayItems { params, entries ->
+                    VVItems.ITEMS.forEach {
                         when (it) {
                             is PotionItem -> entries.generatePotionEntries(params, it)
                             else -> entries.addItem(it)
                         }
                     }
-                    return@entries
                 }.build()
         )
 
-        addToTab(ItemGroups.BUILDING_BLOCKS) {
+        addToTab(CreativeModeTabs.BUILDING_BLOCKS) {
             it.addAfter(Blocks.BRICK_WALL, VVBlocks.BRICK_FENCE)
 
             it.addBefore(
@@ -170,7 +172,7 @@ object VVTabs {
             it.addAfter(Blocks.SMOOTH_QUARTZ_SLAB, VVBlocks.SMOOTH_QUARTZ_WALL)
         }
 
-        addToTab(ItemGroups.FUNCTIONAL_BLOCKS) {
+        addToTab(CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             it.addBefore(Blocks.CHAIN, VVBlocks.REDSTONE_LANTERN)
 
             it.addAfter(Blocks.INFESTED_COBBLESTONE, VVBlocks.INFESTED_MOSSY_COBBLESTONE)
@@ -188,7 +190,7 @@ object VVTabs {
 
 
     @Suppress("SameParameterValue")
-    private fun register(name: String, itemGroup: ItemGroup): Holder.Reference<ItemGroup> {
-        return Registries.ITEM_GROUP.registerHolder(id(name), itemGroup)
+    private fun register(name: String, itemGroup: CreativeModeTab): Holder.Reference<CreativeModeTab> {
+        return BuiltInRegistries.CREATIVE_MODE_TAB.registerHolder(id(name), itemGroup)
     }
 }

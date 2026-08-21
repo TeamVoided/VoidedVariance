@@ -9,15 +9,14 @@ import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import it.unimi.dsi.fastutil.chars.CharArraySet
 import it.unimi.dsi.fastutil.chars.CharSet
-import net.minecraft.item.ItemStack
-import net.minecraft.network.RegistryByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.codec.ValueFirstEncoder
-import net.minecraft.recipe.CraftingRecipeInput
-import net.minecraft.recipe.Ingredient
-import net.minecraft.util.Util
-import net.minecraft.util.collection.DefaultedList
-import net.minecraft.util.dynamic.Codecs
+import net.minecraft.Util
+import net.minecraft.core.NonNullList
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.util.ExtraCodecs
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.crafting.CraftingInput
+import net.minecraft.world.item.crafting.Ingredient
 import java.util.*
 import java.util.function.Function
 import kotlin.math.max
@@ -25,8 +24,8 @@ import kotlin.math.min
 
 class StrictShapedRecipePattern(
     val width: Int, val height: Int,
-    val ingredients: DefaultedList<Ingredient>,
-    val groups: DefaultedList<Char>,
+    val ingredients: NonNullList<Ingredient>,
+    val groups: NonNullList<Char>,
     private val data: Optional<ShapeData>,
 ) {
     private val ingredientCount: Int
@@ -42,14 +41,14 @@ class StrictShapedRecipePattern(
         }
 
         this.ingredientCount = i
-        this.symmetric = Util.isHorizontallySymmetric<Ingredient>(width, height, ingredients)
+        this.symmetric = Util.isSymmetrical(width, height, ingredients)
     }
 
-    fun matches(input: CraftingRecipeInput): Boolean {
-        if (input.inputCount != this.ingredientCount) {
+    fun matches(input: CraftingInput): Boolean {
+        if (input.ingredientCount() != this.ingredientCount) {
             return false
         } else {
-            if (input.width == this.width && input.height == this.height) {
+            if (input.width() == this.width && input.height() == this.height) {
                 if (!this.symmetric && this.matches(input, true)) {
                     return true
                 }
@@ -63,7 +62,7 @@ class StrictShapedRecipePattern(
         }
     }
 
-    private fun matches(input: CraftingRecipeInput, mirror: Boolean): Boolean {
+    private fun matches(input: CraftingInput, mirror: Boolean): Boolean {
         val groups = mutableMapOf<Char, List<ItemStack>>()
         for (i in 0..<this.height) {
             for (j in 0..<this.width) {
@@ -71,7 +70,7 @@ class StrictShapedRecipePattern(
                     if (mirror) this.ingredients[this.width - j - 1 + i * this.width]
                     else this.ingredients[j + i * this.width]
 
-                val itemStack = input.get(j, i)
+                val itemStack = input.getItem(j, i)
                 if (!ingredient.test(itemStack)) {
                     return false
                 }
@@ -87,7 +86,7 @@ class StrictShapedRecipePattern(
             if (stacks.size <= 1) continue
             var uniform = true
             for (stack in stacks) {
-                if (!stack.isOf(stacks[0].item)) {
+                if (!stack.`is`(stacks[0].item)) {
                     uniform = false
                     break
                 }
@@ -98,65 +97,65 @@ class StrictShapedRecipePattern(
         return true
     }
 
-    private fun toBuf(buf: RegistryByteBuf) {
+    private fun toBuf(buf: RegistryFriendlyByteBuf) {
         buf.writeVarInt(this.width)
         buf.writeVarInt(this.height)
         for (group in this.groups) {
             buf.writeChar(group?.code ?: EMPTY_CHAR.code)
         }
         for (ingredient in this.ingredients) {
-            Ingredient.PACKET_CODEC.encode(buf, ingredient)
+            Ingredient.CONTENTS_STREAM_CODEC.encode(buf, ingredient)
         }
     }
 
     @JvmRecord
     data class ShapeData(val key: MutableMap<Char, Pair<Boolean, Ingredient>>, val pattern: MutableList<String>) {
-        companion object {
-            private val PATTERN_CODEC: Codec<MutableList<String>> = Codec.STRING.listOf()
-                .comapFlatMap(
-                    { pattern ->
-                        if (pattern.size > MAX_WIDTH_AND_HEIGHT) {
-                            return@comapFlatMap DataResult.error { "Invalid pattern: too many rows, 3 is maximum" }
-                        } else if (pattern.isEmpty()) {
-                            return@comapFlatMap DataResult.error { "Invalid pattern: empty pattern not allowed" }
-                        } else {
-                            val firstLen: Int = pattern.first().length
-                            for (string in pattern) {
-                                if (string.length > MAX_WIDTH_AND_HEIGHT) {
-                                    return@comapFlatMap DataResult.error { "Invalid pattern: too many columns, 3 is maximum" }
-                                }
 
-                                if (firstLen != string.length) {
-                                    return@comapFlatMap DataResult.error { "Invalid pattern: each row must be the same width" }
-                                }
+        companion object {
+
+            private val PATTERN_CODEC: Codec<MutableList<String>> = Codec.STRING.listOf().comapFlatMap(
+                { pattern ->
+                    if (pattern.size > MAX_WIDTH_AND_HEIGHT) {
+                        return@comapFlatMap DataResult.error { "Invalid pattern: too many rows, 3 is maximum" }
+                    } else if (pattern.isEmpty()) {
+                        return@comapFlatMap DataResult.error { "Invalid pattern: empty pattern not allowed" }
+                    } else {
+                        val firstLen: Int = pattern.first().length
+                        for (string in pattern) {
+                            if (string.length > MAX_WIDTH_AND_HEIGHT) {
+                                return@comapFlatMap DataResult.error { "Invalid pattern: too many columns, 3 is maximum" }
                             }
-                            return@comapFlatMap DataResult.success(pattern)
+
+                            if (firstLen != string.length) {
+                                return@comapFlatMap DataResult.error { "Invalid pattern: each row must be the same width" }
+                            }
                         }
-                    }, Function.identity()
-                )
-            private val KEY_SYMBOL_CODEC: Codec<Char> = Codec.STRING.comapFlatMap<Char>({ symbol ->
+                        return@comapFlatMap DataResult.success(pattern)
+                    }
+                }, Function.identity()
+            )
+
+            private val KEY_SYMBOL_CODEC: Codec<Char> = Codec.STRING.comapFlatMap({ symbol ->
                 if (symbol.length != 1) {
                     return@comapFlatMap DataResult.error { "Invalid key entry: '$symbol' is an invalid symbol (must be 1 character only)." }
                 } else {
                     return@comapFlatMap if (" " == symbol) DataResult.error { "Invalid key entry: ' ' is a reserved symbol." }
-                    else DataResult.success<Char>(symbol[0])
+                    else DataResult.success(symbol[0])
                 }
             }, { it.toString() })
 
-            val INTERNAL_PAIR_CODEC = Codec.pair(
+            val INTERNAL_PAIR_CODEC: Codec<Pair<Boolean, Ingredient>> = Codec.pair(
                 Codec.BOOL.fieldOf("strict").codec(),
-                Ingredient.DISALLOW_EMPTY_CODEC.fieldOf("ingredient").codec()
+                Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").codec()
             )
             val PAIR_CODEC: Codec<Pair<Boolean, Ingredient>> = object : Codec<Pair<Boolean, Ingredient>> {
                 override fun <T : Any> encode(
-                    input: Pair<Boolean, Ingredient>,
-                    ops: DynamicOps<T>,
-                    prefix: T,
+                    input: Pair<Boolean, Ingredient>, ops: DynamicOps<T>, prefix: T,
                 ): DataResult<T> {
                     return if (input.first) {
                         INTERNAL_PAIR_CODEC.encode(input, ops, prefix)
                     } else {
-                        val result = Ingredient.DISALLOW_EMPTY_CODEC.encode(input.second, ops, prefix)
+                        val result = Ingredient.CODEC_NONEMPTY.encode(input.second, ops, prefix)
                         if (result.isSuccess) result
                         else result.error().get()
                     }
@@ -169,7 +168,7 @@ class StrictShapedRecipePattern(
                     return if (ops.get(input, "strict").isSuccess) {
                         INTERNAL_PAIR_CODEC.decode(ops, input)
                     } else {
-                        val result = Ingredient.DISALLOW_EMPTY_CODEC.decode(ops, input)
+                        val result = Ingredient.CODEC_NONEMPTY.decode(ops, input)
                         if (result.isSuccess)
                             DataResult.success(Pair.of(Pair.of(false, result.result().get().first), input))
                         else
@@ -178,30 +177,30 @@ class StrictShapedRecipePattern(
                 }
             }
 
-
             val CODEC: MapCodec<ShapeData> = RecordCodecBuilder.mapCodec { instance ->
                 instance.group(
-                    Codecs.createStrictUnboundedMap(
-                        KEY_SYMBOL_CODEC, PAIR_CODEC
-                    ).fieldOf("key").forGetter { it.key },
-                    PATTERN_CODEC.fieldOf("pattern").forGetter<ShapeData> { it.pattern }
+                    ExtraCodecs.strictUnboundedMap(KEY_SYMBOL_CODEC, PAIR_CODEC)
+                        .fieldOf("key").forGetter(ShapeData::key),
+                    PATTERN_CODEC.fieldOf("pattern").forGetter(ShapeData::pattern)
                 ).apply(instance, ::ShapeData)
             }
+
         }
     }
 
     companion object {
+
         private const val MAX_WIDTH_AND_HEIGHT = 3
         const val EMPTY_CHAR = ' '
-        val CODEC: MapCodec<StrictShapedRecipePattern> = ShapeData.Companion.CODEC.flatXmap(::fromData) { pattern ->
+
+        val CODEC: MapCodec<StrictShapedRecipePattern> = ShapeData.CODEC.flatXmap(::fromData) { pattern ->
             pattern.data
                 .map { DataResult.success(it) }
                 .orElseGet { DataResult.error { "Cannot encode unpacked recipe" } }
         }
-        val PACKET_CODEC: PacketCodec<RegistryByteBuf, StrictShapedRecipePattern> =
-            PacketCodec.create<RegistryByteBuf, StrictShapedRecipePattern>(
-                ValueFirstEncoder { obj, buf -> obj.toBuf(buf) }, ::fromBuf
-            )
+
+        val PACKET_CODEC: StreamCodec<RegistryFriendlyByteBuf, StrictShapedRecipePattern> =
+            StreamCodec.ofMember({ obj, buf -> obj.toBuf(buf) }, ::fromBuf)
 
         fun of(key: MutableMap<Char, Pair<Boolean, Ingredient>>, vararg pattern: String): StrictShapedRecipePattern {
             val data = ShapeData(key, pattern.toMutableList())
@@ -212,24 +211,23 @@ class StrictShapedRecipePattern(
             val strings = trim(data.pattern)
             val i = strings.getOrNull(0)?.length ?: 0
             val j = strings.size
-            val defaultedList = DefaultedList.ofSize(i * j, Ingredient.EMPTY)
-            val groupList: DefaultedList<Char> = DefaultedList.ofSize(i * j, EMPTY_CHAR)
+            val defaultedList = NonNullList.withSize(i * j, Ingredient.EMPTY)
+            val groupList: NonNullList<Char> = NonNullList.withSize(i * j, EMPTY_CHAR)
             val charSet: CharSet = CharArraySet(data.key.keys)
 
             for (k in strings.indices) {
                 val string = strings[k]
 
-                for (l in 0..<string.length) {
-                    val c = string[l]
-                    val ingredient = if (c == EMPTY_CHAR) Ingredient.EMPTY else data.key[c]?.second
+                for ((l, char) in string.withIndex()) {
+                    val ingredient = if (char == EMPTY_CHAR) Ingredient.EMPTY else data.key[char]?.second
                     if (ingredient == null) {
-                        return DataResult.error { "Pattern references symbol '$c' but it's not defined in the key" }
+                        return DataResult.error { "Pattern references symbol '$char' but it's not defined in the key" }
                     }
 
-                    charSet.remove(c)
+                    charSet.remove(char)
                     defaultedList[l + i * k] = ingredient
-                    if (data.key[c]?.first == true) {
-                        groupList[l + i * k] = c
+                    if (data.key[char]?.first == true) {
+                        groupList[l + i * k] = char
                     }
                 }
             }
@@ -242,7 +240,7 @@ class StrictShapedRecipePattern(
 
         @VisibleForTesting
         fun trim(pattern: MutableList<String>): Array<String> {
-            var i = Int.Companion.MAX_VALUE
+            var i = Int.MAX_VALUE
             var j = 0
             var k = 0
             var l = 0
@@ -284,16 +282,17 @@ class StrictShapedRecipePattern(
             return i
         }
 
-        private fun fromBuf(buf: RegistryByteBuf): StrictShapedRecipePattern {
+        private fun fromBuf(buf: RegistryFriendlyByteBuf): StrictShapedRecipePattern {
             val i = buf.readVarInt()
             val j = buf.readVarInt()
 
-            val groupList: DefaultedList<Char> = DefaultedList.ofSize(i * j, EMPTY_CHAR)
+            val groupList: NonNullList<Char> = NonNullList.withSize(i * j, EMPTY_CHAR)
             groupList.replaceAll { buf.readChar() }
 
-            val defaultedList = DefaultedList.ofSize(i * j, Ingredient.EMPTY)
-            defaultedList.replaceAll { ingredient: Ingredient -> Ingredient.PACKET_CODEC.decode(buf) }
+            val defaultedList = NonNullList.withSize(i * j, Ingredient.EMPTY)
+            defaultedList.replaceAll { Ingredient.CONTENTS_STREAM_CODEC.decode(buf) }
             return StrictShapedRecipePattern(i, j, defaultedList, groupList, Optional.empty())
         }
+
     }
 }

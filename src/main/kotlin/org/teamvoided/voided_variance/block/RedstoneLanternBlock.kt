@@ -1,81 +1,89 @@
 package org.teamvoided.voided_variance.block
 
-import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.block.LanternBlock
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.state.StateManager
-import net.minecraft.state.property.BooleanProperty
-import net.minecraft.state.property.Properties
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
-import net.minecraft.util.random.RandomGenerator
-import net.minecraft.world.BlockView
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.util.RandomSource
+import net.minecraft.world.level.BlockGetter
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.LanternBlock
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.state.StateDefinition
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.world.level.block.state.properties.BooleanProperty
 
-class RedstoneLanternBlock(settings: Settings) : LanternBlock(settings) {
+
+class RedstoneLanternBlock(properties: Properties) : LanternBlock(properties) {
+
     init {
-        defaultState = stateManager.defaultState.with(LIT, true)
+        registerDefaultState(defaultBlockState().setValue(LIT, true))
     }
 
-    override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
-        super.appendProperties(builder)
+    override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
+        super.createBlockStateDefinition(builder)
         builder.add(LIT)
     }
 
-    override fun onBlockAdded(state: BlockState, world: World, pos: BlockPos, oldState: BlockState, notify: Boolean) {
-        for (direction in Direction.entries) {
-            world.updateNeighborsAlways(pos.offset(direction), this)
+    override fun onPlace(state: BlockState, level: Level, pos: BlockPos, oldState: BlockState, notify: Boolean) {
+        super.onPlace(state, level, pos, oldState, notify)
+        for (dir in Direction.entries) {
+            level.updateNeighborsAt(pos.relative(dir), this)
         }
     }
 
-    override fun onStateReplaced(state: BlockState, world: World, pos: BlockPos, newState: BlockState, moved: Boolean) {
+    override fun onRemove(state: BlockState, level: Level, pos: BlockPos, newState: BlockState, moved: Boolean) {
+        super.onRemove(state, level, pos, newState, false)
         if (moved) return
-        for (direction in Direction.entries) {
-            world.updateNeighborsAlways(pos.offset(direction), this)
+
+        for (dir in Direction.entries) {
+            level.updateNeighborsAt(pos.relative(dir), this)
         }
     }
 
-    override fun neighborUpdate(
-        state: BlockState, world: World, pos: BlockPos, block: Block, fromPos: BlockPos, notify: Boolean,
+    override fun neighborChanged(
+        state: BlockState, level: Level, pos: BlockPos, block: Block, fromPos: BlockPos, notify: Boolean,
     ) {
-        if (state.get(LIT) == this.shouldUnPower(world, pos, state) && !world.blockTickScheduler.willTick(pos, this))
-            world.scheduleBlockTick(pos, this, 2)
-    }
-
-    override fun getWeakRedstonePower(state: BlockState, world: BlockView, pos: BlockPos, direction: Direction): Int {
-        if (!state.get(LIT)) return 0
-
-        return if ((state.get(HANGING) && Direction.DOWN != direction) || Direction.UP != direction) 15
-        else 0
-    }
-
-    override fun getStrongRedstonePower(state: BlockState, world: BlockView, pos: BlockPos, dir: Direction): Int {
-        if (state.get(HANGING)) {
-            return if (dir == Direction.UP) state.getWeakRedstonePower(world, pos, dir) else 0
+        super.neighborChanged(state, level, pos, block, fromPos, notify)
+        if (state.getValue(LIT) == shouldUnPower(level, pos, state) && !level.blockTicks.willTickThisTick(pos, this)) {
+            level.scheduleTick(pos, this, 2)
         }
-        return if (dir == Direction.DOWN) state.getWeakRedstonePower(world, pos, dir) else 0
     }
 
-    private fun shouldUnPower(world: World, pos: BlockPos, state: BlockState): Boolean {
-        val isHanging = state.get(HANGING)
+    override fun getSignal(state: BlockState, level: BlockGetter, pos: BlockPos, dir: Direction): Int {
+        if (!state.getValue(LIT)) return 0
 
-        return if (isHanging) world.isEmittingRedstonePower(pos.up(), Direction.UP)
-        else world.isEmittingRedstonePower(pos.down(), Direction.DOWN)
+        return if ((state.getValue(HANGING) && Direction.DOWN != dir) || Direction.UP != dir) 15 else 0
     }
 
-    override fun scheduledTick(state: BlockState, world: ServerWorld, pos: BlockPos, random: RandomGenerator) {
-        world.setBlockState(
+    override fun getDirectSignal(state: BlockState, level: BlockGetter, pos: BlockPos, dir: Direction): Int {
+        return if (state.getValue(HANGING))
+            if (dir == Direction.UP) state.getSignal(level, pos, dir) else 0
+        else
+            if (dir == Direction.DOWN) state.getSignal(level, pos, dir) else 0
+    }
+
+    override fun tick(state: BlockState, level: ServerLevel, pos: BlockPos, random: RandomSource) {
+        level.setBlock(
             pos,
-            state.with(LIT, !(state.get(LIT) && shouldUnPower(world, pos, state))),
-            3
+            state.setValue(LIT, !(state.getValue(LIT) && shouldUnPower(level, pos, state))),
+            UPDATE_ALL
         )
+        super.tick(state, level, pos, random)
     }
 
-    override fun isRedstonePowerSource(state: BlockState): Boolean = state.get(LIT)
+    override fun isSignalSource(state: BlockState): Boolean = state.getValue(LIT)
 
     companion object {
-        val LIT: BooleanProperty = Properties.LIT
-        val HANGING: BooleanProperty = Properties.HANGING
+
+        val LIT: BooleanProperty = BlockStateProperties.LIT
+
+        fun shouldUnPower(level: Level, pos: BlockPos, state: BlockState): Boolean {
+            return if (state.getValue(HANGING))
+                level.hasSignal(pos.above(), Direction.UP)
+            else
+                level.hasSignal(pos.below(), Direction.DOWN)
+        }
+
     }
 }

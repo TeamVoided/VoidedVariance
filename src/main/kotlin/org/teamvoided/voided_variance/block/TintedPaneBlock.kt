@@ -1,11 +1,15 @@
 package org.teamvoided.voided_variance.block
 
-import net.minecraft.block.BlockState
-import net.minecraft.block.PaneBlock
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.BlockView
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter
+import net.minecraft.world.level.block.IronBarsBlock
+import net.minecraft.world.level.block.state.BlockState
 
-class TintedPaneBlock(settings: Settings) : PaneBlock(settings) {
-    override fun isTransparent(state: BlockState, world: BlockView, pos: BlockPos): Boolean = false
-    override fun getOpacity(state: BlockState, world: BlockView, pos: BlockPos): Int = world.maxLightLevel / 2
+
+class TintedPaneBlock(properties: Properties) : IronBarsBlock(properties) {
+
+    override fun propagatesSkylightDown(state: BlockState, level: BlockGetter, pos: BlockPos): Boolean = false
+
+    override fun getLightBlock(state: BlockState, level: BlockGetter, pos: BlockPos): Int = level.maxLightLevel / 2
+
 }

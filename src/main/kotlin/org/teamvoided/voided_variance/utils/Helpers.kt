@@ -2,38 +2,53 @@ package org.teamvoided.voided_variance.utils
 
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.block.Block
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemConvertible
-import net.minecraft.registry.Holder
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.core.Holder
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.tags.TagKey
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.ItemLike
+import net.minecraft.world.level.block.Block
+import org.teamvoided.voided_variance.VoidedVariance.MODID
 
 fun isDev() = FabricLoader.getInstance().isDevelopmentEnvironment
 
-fun <T> Registry<T>.registerHolder(id: Identifier, entry: T): Holder.Reference<T> =
-    Registry.registerHolder(this, id, entry)
+fun <T : Any> isModHolder(holder: Holder<T>) = holder.`is` { it.location().namespace == MODID }
 
-fun <T> Registry<T>.register(id: Identifier, entry: T): T = Registry.register(this, id, entry)
+fun <T : Any> getModHolders(registry: Registry<T>): List<Holder.Reference<T>> = registry.holders()
+    .filter(::isModHolder)
+    .toList()
 
-val Item.id get() = Registries.ITEM.getId(this)
-val Block.id get() = Registries.BLOCK.getId(this)
+fun <T : Any> getModEntries(registry: Registry<T>): List<T> = registry.holders()
+    .filter(::isModHolder)
+    .map(Holder<T>::value)
+    .toList()
+
+fun <V : Any, T : V> Registry<V>.register(id: ResourceLocation, entry: T): T = Registry.register(this, id, entry)
+fun <V : Any, T : V> Registry<T>.registerHolder(id: ResourceLocation, entry: T): Holder.Reference<T> =
+    Registry.registerForHolder(this, id, entry)
+
+fun <T : Any, R : Registry<T>> ResourceKey<R>.tag(id: ResourceLocation): TagKey<T> = TagKey.create(this, id)
+fun <T : Any, R : Registry<T>> ResourceKey<R>.key(id: ResourceLocation): ResourceKey<T> = ResourceKey.create(this, id)
+
+val Item.id get() = BuiltInRegistries.ITEM.getKey(this)
+val Block.id get() = BuiltInRegistries.BLOCK.getKey(this)
 
 fun <T> FabricTagProvider<T>.FabricTagBuilder.addAll(list: Iterable<T>): FabricTagProvider<T>.FabricTagBuilder {
-    list.forEach{this.add(it)}
+    list.forEach { this.add(it) }
     return this
 }
 
-fun Collection<ItemConvertible>.toItems() = this.map(ItemConvertible::asItem)
-fun Collection<ItemConvertible>.toStacks() = this.toItems().map(Item::getDefaultStack)
+fun Collection<ItemLike>.toItems() = this.map(ItemLike::asItem)
+fun Collection<ItemLike>.toStacks() = this.toItems().map(Item::getDefaultInstance)
 
-fun PlayerEntity.debugBlock(func: MutableList<String>.() -> Unit) {
-    val msg = mutableListOf<String>()
-    func(msg)
-    if (msg.isNotEmpty() && this is ServerPlayerEntity)
-        msg.forEach { this.sendMessage(Text.literal(it), false) }
+
+fun Player.giveItem(stack: ItemStack) {
+    if (!addItem(stack)) {
+        drop(stack, false)
+    }
 }

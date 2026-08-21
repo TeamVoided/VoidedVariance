@@ -2,11 +2,10 @@ package org.teamvoided.voided_variance
 
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.util.ColorUtil
-import net.minecraft.client.util.ColorUtil.Argb32.mixColor
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.PotionContentsComponent
+import net.minecraft.client.renderer.RenderType
+import net.minecraft.core.component.DataComponents
+import net.minecraft.util.FastColor
+import net.minecraft.world.item.alchemy.PotionContents
 import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.init.VVItems
 import org.teamvoided.voided_variance.utils.datagen.CUTOUT_BLOCKS
@@ -16,18 +15,20 @@ import org.teamvoided.voided_variance.utils.datagen.CUTOUT_BLOCKS
 object VoidedVarianceClient {
 
     fun init() {
-        CUTOUT_BLOCKS.forEach { BlockRenderLayerMap.INSTANCE.putBlock(it, RenderLayer.getCutout()) }
+        CUTOUT_BLOCKS.forEach { BlockRenderLayerMap.INSTANCE.putBlock(it, RenderType.cutout()) }
         listOf(VVBlocks.TINTED_GLASS_PANE)
-            .forEach { BlockRenderLayerMap.INSTANCE.putBlock(it, RenderLayer.getTranslucent()) }
+            .forEach { BlockRenderLayerMap.INSTANCE.putBlock(it, RenderType.translucent()) }
 
         ColorProviderRegistry.ITEM.register(
             { stack, tintIdx ->
-                if (tintIdx > 0) -1 else
-                    ColorUtil.Argb32.toOpaque(
-                        mixColor(
+                if (tintIdx > 0)
+                    -1
+                else
+                    FastColor.ARGB32.opaque(
+                        FastColor.ARGB32.multiply(
                             stack.getOrDefault(
-                                DataComponentTypes.POTION_CONTENTS,
-                                PotionContentsComponent.DEFAULT
+                                DataComponents.POTION_CONTENTS,
+                                PotionContents.EMPTY
                             ).color, 0xFF_7F_7F_7F.toInt()
                         )
                     )

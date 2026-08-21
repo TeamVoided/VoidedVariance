@@ -1,20 +1,20 @@
 package org.teamvoided.voided_variance.data.gen.tags
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider.ItemTagProvider
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBlockTags
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags
-import net.minecraft.registry.HolderLookup
-import net.minecraft.registry.tag.BlockTags
-import net.minecraft.registry.tag.ItemTags
+import net.minecraft.core.HolderLookup
+import net.minecraft.tags.BlockTags
+import net.minecraft.tags.ItemTags
 import org.teamvoided.voided_variance.data.tags.CBlockTags
 import org.teamvoided.voided_variance.data.tags.CItemTags
 import java.util.concurrent.CompletableFuture
 
 class ItemTagProvider(o: FabricDataOutput, r: CompletableFuture<HolderLookup.Provider>, blockTags: BlockTagProvider) :
-    FabricTagProvider.ItemTagProvider(o, r, blockTags) {
+    ItemTagProvider(o, r, blockTags) {
 
-    override fun configure(wrapperLookup: HolderLookup.Provider) {
+    override fun addTags(lookup: HolderLookup.Provider) {
         copyVanillaTags()
         initConventionalTags()
         copyConventionalTags()

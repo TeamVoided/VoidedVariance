@@ -5,7 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "MangroveRootsBlockMixin",
-    "PotionEntityMixin"
+    "ThrownPotionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

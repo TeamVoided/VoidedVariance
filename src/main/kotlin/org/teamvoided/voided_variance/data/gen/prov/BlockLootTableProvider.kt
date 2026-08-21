@@ -2,18 +2,18 @@ package org.teamvoided.voided_variance.data.gen.prov
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricBlockLootTableProvider
-import net.minecraft.block.Block
-import net.minecraft.block.SlabBlock
-import net.minecraft.item.Item
-import net.minecraft.item.Items
-import net.minecraft.loot.LootPool
-import net.minecraft.loot.LootTable
-import net.minecraft.loot.condition.BlockStatePropertyLootCondition
-import net.minecraft.loot.entry.ItemEntry
-import net.minecraft.loot.function.SetCountLootFunction
-import net.minecraft.loot.provider.number.ConstantLootNumberProvider
-import net.minecraft.predicate.StatePredicate
-import net.minecraft.registry.HolderLookup
+import net.minecraft.advancements.critereon.StatePropertiesPredicate
+import net.minecraft.core.HolderLookup
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SlabBlock
+import net.minecraft.world.level.storage.loot.LootPool
+import net.minecraft.world.level.storage.loot.LootTable
+import net.minecraft.world.level.storage.loot.entries.LootItem
+import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction
+import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition
+import net.minecraft.world.level.storage.loot.providers.number.ConstantValue
 import org.teamvoided.voided_variance.block.CompositeBlock
 import org.teamvoided.voided_variance.init.VVBlocks
 import org.teamvoided.voided_variance.init.VVBlocks.HEAVY_CUBE
@@ -26,8 +26,8 @@ class BlockLootTableProvider(o: FabricDataOutput, r: CompletableFuture<HolderLoo
     override fun generate() {
         VVBlocks.BLOCKS.filter { it !in excludeList }.forEach {
             when (it) {
-                is SlabBlock -> add(it, ::slabDrops)
-                else -> addDrop(it)
+                is SlabBlock -> add(it, ::createSlabItemTable)
+                else -> dropSelf(it)
             }
         }
 
@@ -35,26 +35,27 @@ class BlockLootTableProvider(o: FabricDataOutput, r: CompletableFuture<HolderLoo
     }
 
     fun dropCompositeBlock(block: Block, partItem: Item): LootTable.Builder {
-        val fullProperties = StatePredicate.Builder.create()
-        val partItemEntry = ItemEntry.builder(partItem)
-            .apply(SetCountLootFunction.builder(ConstantLootNumberProvider.create(0f), false))
+        val fullProperties = StatePropertiesPredicate.Builder.properties()
+        val partItemEntry = LootItem.lootTableItem(partItem)
+            .apply(SetItemCountFunction.setCount(ConstantValue.exactly(0f), false))
         CompositeBlock.PROPS.forEach {
-            fullProperties.exactMatch(it, true)
+            fullProperties.hasProperty(it, true)
             partItemEntry.apply(
-                SetCountLootFunction.builder(ConstantLootNumberProvider.create(1f), true).conditionally(
-                    BlockStatePropertyLootCondition.builder(block)
-                        .properties(StatePredicate.Builder.create().exactMatch(it, true))
+                SetItemCountFunction.setCount(ConstantValue.exactly(1f), true).`when`(
+                    LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                        .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(it, true))
                 )
             )
         }
-        return LootTable.builder().pool(
-            LootPool.builder()
-                .with(
-                    applyExplosionDecay(
-                        block, ItemEntry.builder(block)
-                            .conditionally(BlockStatePropertyLootCondition.builder(block).properties(fullProperties))
-                    ).alternatively(partItemEntry)
-                )
+        return LootTable.lootTable().pool(
+            LootPool.lootPool().add(
+                applyExplosionDecay(
+                    block, LootItem.lootTableItem(block).`when`(
+                        LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                            .setProperties(fullProperties)
+                    )
+                ).otherwise(partItemEntry)
+            ).build()
         )
     }
 }

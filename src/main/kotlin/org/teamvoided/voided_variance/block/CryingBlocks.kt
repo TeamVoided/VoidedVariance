@@ -1,55 +1,66 @@
 package org.teamvoided.voided_variance.block
 
-import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.particle.ParticleTypes
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
-import net.minecraft.util.random.RandomGenerator
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
+import net.minecraft.core.particles.ParticleOptions
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.util.RandomSource
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState
+
 
 interface CryingBlock {
-    fun particle(state: BlockState, world: World, pos: BlockPos, random: RandomGenerator) {
-        if (random.nextInt(5) == 0) {
-            val direction = Direction.random(random)
-            if (direction != Direction.UP) {
-                val blockPos = pos.offset(direction)
-                val blockState = world.getBlockState(blockPos)
-                if (!state.isOpaque || !blockState.isSideSolidFullSquare(world, blockPos, direction.opposite)) {
-                    val d =
-                        if (direction.offsetX == 0) random.nextDouble() else 0.5 + direction.offsetX.toDouble() * 0.6
-                    val e =
-                        if (direction.offsetY == 0) random.nextDouble() else 0.5 + direction.offsetY.toDouble() * 0.6
-                    val f =
-                        if (direction.offsetZ == 0) random.nextDouble() else 0.5 + direction.offsetZ.toDouble() * 0.6
-                    world.addParticle(
-                        ParticleTypes.DRIPPING_OBSIDIAN_TEAR,
-                        pos.x.toDouble() + d, pos.y.toDouble() + e, pos.z.toDouble() + f,
-                        0.0, 0.0, 0.0
-                    )
-                }
-            }
+
+    fun createParticles(state: BlockState, level: Level, pos: BlockPos, random: RandomSource) {
+        if (random.nextInt(5) != 0) return
+
+        val dir = Direction.getRandom(random)
+        if (dir == Direction.UP) return
+
+        val offsetPos = pos.relative(dir)
+        val sideSate = level.getBlockState(offsetPos)
+        if (!state.canOcclude() || !sideSate.isFaceSturdy(level, offsetPos, dir.opposite)) {
+            val xOffset = if (dir.stepX == 0) random.nextDouble() else 0.5 + dir.stepX * 0.6
+            val yOffset = if (dir.stepY == 0) random.nextDouble() else 0.5 + dir.stepY * 0.6
+            val zOffset = if (dir.stepZ == 0) random.nextDouble() else 0.5 + dir.stepZ * 0.6
+            level.addParticle(
+                getParticleOption(state, level, pos, random),
+                pos.x + xOffset, pos.y + yOffset, pos.z + zOffset,
+                0.0, 0.0, 0.0
+            )
         }
     }
+
+    fun getParticleOption(state: BlockState, level: Level, pos: BlockPos, random: RandomSource): ParticleOptions {
+        return ParticleTypes.DRIPPING_OBSIDIAN_TEAR
+    }
+
 }
 
-class CryingStairsBlock(block: Block, settings: Settings) : VStairsBlock(block, settings), CryingBlock {
-    override fun randomDisplayTick(state: BlockState, world: World, pos: BlockPos, random: RandomGenerator) {
-        particle(state, world, pos, random)
-        super.randomDisplayTick(state, world, pos, random)
+class CryingStairsBlock(block: Block, properties: Properties) : VStairsBlock(block, properties), CryingBlock {
+
+    override fun animateTick(state: BlockState, level: Level, pos: BlockPos, random: RandomSource) {
+        createParticles(state, level, pos, random)
+        super.animateTick(state, level, pos, random)
     }
+
 }
 
-class CryingSlabBlock(block: Block, settings: Settings) : VSlabBlock(block, settings), CryingBlock {
-    override fun randomDisplayTick(state: BlockState, world: World, pos: BlockPos, random: RandomGenerator) {
-        particle(state, world, pos, random)
-        super.randomDisplayTick(state, world, pos, random)
+class CryingSlabBlock(block: Block, properties: Properties) : VSlabBlock(block, properties), CryingBlock {
+
+    override fun animateTick(state: BlockState, level: Level, pos: BlockPos, random: RandomSource) {
+        createParticles(state, level, pos, random)
+        super.animateTick(state, level, pos, random)
     }
+
 }
 
-class CryingWallBlock(block: Block, settings: Settings) : VWallBlock(block, settings), CryingBlock {
-    override fun randomDisplayTick(state: BlockState, world: World, pos: BlockPos, random: RandomGenerator) {
-        particle(state, world, pos, random)
-        super.randomDisplayTick(state, world, pos, random)
+class CryingWallBlock(block: Block, properties: Properties) : VWallBlock(block, properties), CryingBlock {
+
+    override fun animateTick(state: BlockState, level: Level, pos: BlockPos, random: RandomSource) {
+        createParticles(state, level, pos, random)
+        super.animateTick(state, level, pos, random)
     }
+
 }

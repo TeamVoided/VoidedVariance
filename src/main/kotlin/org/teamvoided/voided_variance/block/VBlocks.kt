@@ -1,10 +1,12 @@
 package org.teamvoided.voided_variance.block
 
-import net.minecraft.block.Block
-import net.minecraft.block.SlabBlock
-import net.minecraft.block.StairsBlock
-import net.minecraft.block.WallBlock
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SlabBlock
+import net.minecraft.world.level.block.StairBlock
+import net.minecraft.world.level.block.WallBlock
 
-open class VStairsBlock(val block: Block, settings: Settings) : StairsBlock(block.defaultState, settings)
-open class VSlabBlock(val block: Block, settings: Settings) : SlabBlock(settings)
-open class VWallBlock(val block: Block, settings: Settings) : WallBlock(settings)
+open class VSlabBlock(val block: Block, properties: Properties) : SlabBlock(properties)
+open class VWallBlock(val block: Block, properties: Properties) : WallBlock(properties)
+open class VStairsBlock(block: Block, properties: Properties) : StairBlock(block.defaultBlockState(), properties) {
+    val block: Block get() = baseState.block
+}
